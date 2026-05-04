@@ -1,0 +1,222 @@
+Fremgangsmetode for hele løsningen
+Her er en komplett plan som dekker alt du har nevnt:
+
+1. Arkitektur og hosting
+1.1 Teknologi
+Frontend + server-side API: Next.js 16.2.4 på Vercel
+Autentisering + database: Supabase
+Betaling: Stripe
+Ekstra: Mulighet for SEO-optimalisert innhold i Next.js sider
+
+1.2 Hostingmodell
+Frontend og backend/API hostes på Vercel.
+Supabase hostes separat som database/auth.
+Stripe kjøres via Next.js API-ruter på Vercel.
+GitHub brukes som versjonskontroll og deploy-kilde.
+Ja, backend og frontend kan begge hostes på Vercel via Next.js App Router. Supabase vil fortsatt være ekstern for auth/data.
+
+2. Data- og domainmodell
+
+2.1 Tabell: fix_requests
+id
+user_id
+title
+description
+category
+package_name
+price
+estimated_time
+status
+payment_status
+created_at
+updated_at
+2.2 Tabell: categories
+id
+name
+description
+base_price
+estimated_time
+2.3 Tabell: packages
+id
+category_id
+name
+price
+features
+delivery_time
+2.4 Statusflyt
+pending_approval — Kunde har sendt forespørsel
+awaiting_payment — Admin godkjent, venter på betaling
+in_progress — Jobben pågår
+completed — Ferdig
+cancelled — Avvist eller avbrutt
+2.5 Betalingsstatus
+unpaid
+paid
+refunded
+
+3. Brukerreise
+
+3.1 Første side / landingsside
+Forklarer hva tjenesten tilbyr
+Viser kategorier og pakker
+SEO-optimalisert innhold
+Call-to-action: registrer / logg inn
+
+3.2 Registrering / innlogging
+Registrer med e-post og passord
+Logg inn
+E-postbekreftelse hvis ønskelig (Supabase støtter dette)
+Bruker får returnert til dashboard etter login
+
+3.3 Opprettelse av jobbforespørsel
+Kunden velger:
+Kategori / emne
+Tilgjengelige pakker
+Pris og estimert tid vises
+Beskrivelse og ekstra krav
+Kunde sender forespørsel.
+
+3.4 Godkjenningsflyt
+Admin mottar forespørsel.
+Admin kan:
+Godkjenne
+Be om endringer
+Avvise
+Ved godkjenning settes status til awaiting_payment.
+Kunde må betale før jobben kan flyttes til in_progress.
+
+3.5 Betalingsflyt
+Stripe Checkout brukes.
+Kunde kan betale kun når admin har godkjent.
+Etter betaling oppdateres:
+payment_status = paid
+status = in_progress
+
+3.6 Fulfillment
+Admin jobber på saken.
+Når ferdig, endres status til completed.
+Kunde får beskjed og kan se jobbhistorikk og betaling.
+
+4. Admin-funksjoner
+4.1 Admin dashboard
+Liste med alle forespørsler
+Filtrering:
+pending_approval
+awaiting_payment
+in_progress
+completed
+Søk og sortering
+Se detaljer for hver forespørsel
+Endre status
+Generer betalingslenke for kunde
+Marker fullført
+4.2 Admin-rolle
+Sjekk med NEXT_PUBLIC_ADMIN_EMAIL
+Eventuelt en egen is_admin-rolle i Supabase
+Admin-sider er bak autentisering og konto-sjekk
+
+5. Bruker-dashboard
+5.1 Innhold
+Oversikt over egne bestillinger
+Status for hver jobb
+Betalingsstatus
+Link til detaljer og faktura
+Forklarende trinn:
+Sendt inn
+Avventer godkjenning
+Avventer betaling
+Under arbeid
+Fullført
+5.2 UX
+Brukervennlig, proaktiv og “Fiverr-inspirert”
+Vis tydelig hva som er inkludert i hver pakke
+Vis kategorier og hva du kan hjelpe med
+Responsive kort og klare CTA-er
+
+6. Betalingsløsing
+6.1 Stripe-integrasjon
+Implementer Stripe Checkout session i Next.js API
+Lag statusoppdateringer når betaling bekreftes
+Bruk webhook for sikker bekreftelse av betaling
+Oppdater requests til paid og in_progress
+6.2 Bindende betaling
+Kunde kan ikke gå videre før
+admin godkjenner
+betaling er gjennomført
+Hvis jobben er fullført, må sluttbetaling være gjort
+Faktureringsflyt kan vise “Betal nå” før oppstart og “Jobben starter etter betaling”
+
+7. Feilsøking av nåværende auth-feil
+7.1 “Failed to fetch”
+Mulige årsaker:
+
+Supabase client brukes feil i server-side API uten riktig cookies/auth-helpers
+Miljøvariabler mangler eller er feil
+Next.js fetch/Route Handler kombinasjon med auth ikke riktig
+7.2 Hva jeg gjør først
+Fikser alle Supabase auth-rutene til å bruke @supabase/auth-helpers-nextjs
+Sikrer at API-rutene bruker server-side cookies riktig
+Validerer at NEXT_PUBLIC_SUPABASE_URL og NEXT_PUBLIC_SUPABASE_ANON_KEY er korrekte
+Sikrer at login/registrering kommuniserer riktig med Supabase
+
+8. SEO og brukerorientert landingsside
+8.1 Forslag til innhold
+Overskrift som forklarer tjenesten tydelig
+Seksjoner:
+Hva vi fikser
+Kategorier / emner
+Pakker og priser
+Hvordan fungerer prosessen
+Brukeranmeldelser / trust
+CTA: “Registrer deg” og “Start forespørsel”
+8.2 Tekniske SEO-forbedringer
+Metadata i layout.tsx
+Structured content i HTML
+Rask lastetid med Tailwind og minimal kode
+
+9. GitHub + deploy-prosess
+9.1 Før deploy
+Fullfør alt lokalt
+Kjør:
+npm install
+npm run lint
+npm run build
+Test lokalt
+9.2 Push til GitHub
+Opprett repo
+Legg til .gitignore
+git add .
+git commit -m "Complete Micro-fix platform"
+git push origin main
+9.3 Deploy til Vercel
+Koble GitHub repo til Vercel
+Sett miljøvariabler:
+NEXT_PUBLIC_SUPABASE_URL
+NEXT_PUBLIC_SUPABASE_ANON_KEY
+NEXT_PUBLIC_ADMIN_EMAIL
+STRIPE_SECRET_KEY
+STRIPE_WEBHOOK_SECRET
+Deploy
+Verifiser at nettsiden fungerer og auth/betaling er riktig
+
+10. Hva skjer videre
+Jeg foreslår denne rekkefølgen nå:
+
+Fiks Supabase auth + API-ruter med auth-helpers
+Lag kategori/package-modell og utvid fix_requests
+Bygg side for å velge kategori, pakker, pris og tid
+Legg inn godkjenningsflyt og statusøkning
+Integrer Stripe Checkout og webhooks
+Design bruker- og admin-dashboard
+Lag SEO-first landingsside
+Test alt og deploy på Vercel
+
+Konklusjon
+Dette er en fullstendig plan som dekker:
+
+auth/problemer
+admin- og brukerflyt
+kategorier/pakker/priser
+godkjenning og betaling
+profesjonell landingsside
+hosting og GitHub deploy

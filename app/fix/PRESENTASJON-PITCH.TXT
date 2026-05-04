@@ -1,0 +1,97 @@
+Presentasjon / pitch
+
+Hva er Micro‑fix?
+Micro‑fix er en profesjonell bestillingsplattform for rask og trygg teknisk webhjelp. Kunden velger kategori, pakke og pris – du håndterer godkjenning, betaling og leveranse i et moderne adminpanel. Det er et mer presist, profesjonelt og brukervennlig alternativ til Fiverr for WordPress, nettbutikker og små kodeoppdrag.
+
+Hva tilbyr løsningen?
+Kundeportal med registrering, innlogging og personlig dashboard
+
+Adminportal for godkjenning, kommunikasjon og leveranse
+
+Strømlinjeformet bestilling med kategorier, pakker, pris og tidsestimat
+
+Statusflyt: sendt inn → godkjenning → betaling → arbeid → fullført
+
+Stripe‑betaling med resultatgaranti
+
+SEO‑optimalisert landingsside som konverterer nye kunder
+
+Hvorfor dette er attraktivt
+Profesjonelt inntrykk: Egen plattform bygger mer tillit enn generiske frilansmarkeder
+
+Tidsbesparelse: Kunden gir riktig info fra start
+
+Full kontroll: Du styrer oppdrag, betaling og leveranse i ett system
+
+Skalerbart: Kan utvides med flere kategorier, team og abonnementer
+
+Markedsmulighet
+WordPress og nettbutikkmarkedet er enormt i Norge og Europa
+
+SMB‑er mangler teknisk kompetanse og trenger rask, trygg hjelp
+
+Fiverr/Upwork er brede – Micro‑fix er nisje, lokal og profesjonell
+
+Vekstmuligheter
+Abonnement og vedlikeholdsavtaler
+
+Faste pakker for WordPress, WooCommerce og Shopify
+
+Support‑ og mentorprogram
+
+Skalering til full digital byråplattform
+
+Kort pitch
+Micro‑fix gjør teknisk webhjelp like enkelt som å bestille en tjeneste i en nettbutikk. Kunden velger pakke, du godkjenner, Stripe håndterer betalingen, og statusflyten sikrer trygg og profesjonell leveranse. En komplett plattform for småbedrifter som trenger rask, pålitelig og moderne webhjelp.
+
+
+
+---
+
+Hva tilbyr løsningen
+Kundeportal med registrering, login og personlig dashboard
+Administrasjonsportal for deg som leverandør
+Strømlinjeformet jobbsøknad med kategorier, pakker, pris og tidsestimat
+Statusflyt som viser:
+Sendt inn
+Avventer godkjenning
+Avventer betaling
+Under arbeid
+Fullført
+Betalingsintegrasjon med Stripe
+Resultatgaranti: kunden betaler først etter at jobben er godkjent og fullført
+SEO-vennlig landingsside som fremmer tjenestene og gjør det enkelt for nye kunder å finne deg
+Hvorfor dette er attraktivt
+Profesjonelt inntrykk: En skreddersydd løsning bygger tillit mer enn generiske frilansplattformer.
+Tidsbesparelse: Kunden kan selv velge kategori og pakke, slik at du får klare forespørsler med riktig informasjon.
+Bedre kontroll: Du kan godkjenne oppdrag, styre betaling og leveranse direkte i adminpanelet.
+Skalerbart: Systemet kan utvides til flere kategorier, abonnementer, fakturering og teambrukere.
+
+Potensialvurdering
+Markedsmulighet
+WordPress og nettbutikkmarkedet er stort i Norge og Europa.
+Mange småbedrifter trenger rask og trygg teknisk hjelp.
+Konkurrenter som Fiverr og Upwork er brede; Micro-fix kan posisjonere seg som mer lokal, profesjonell og nisjespesifikk.
+Kundeprofil
+Små og mellomstore bedrifter
+Nettbutikk-eiere
+Webansvarlige uten tech-bakgrunn
+Personer som trenger rask feilretting eller forbedring
+Unike styrker
+Fokus på kvalitet og godkjenningsflyt
+Betalingsmodellen styrker trygghet
+Profesjonelt dashbord for både kunde og admin
+Design og brukervennlighet viktigere enn tradisjonelle freelancer-markeder
+Risikoer
+Krever at du bygger tillit tidlig gjennom gode leveranser
+Må ha god betalings- og leveringserfaring for å overbevise kunder
+Stripe/betaling må være sikker og tydelig
+Vekstmuligheter
+Utvidelse til:
+abonnementstjenester
+vedlikeholdsavtaler
+faste pakker for WordPress, WooCommerce, Shopify
+mentor- og supportpakker
+Skalere fra enkel service til fullbygd digital byråplattform
+Samle caser og kundereferanser som poster godt i markedsføring
+
