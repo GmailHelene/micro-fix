@@ -42,7 +42,10 @@ Support‑ og mentorprogram
 Skalering til full digital byråplattform
 
 Kort pitch
-Micro‑fix gjør teknisk webhjelp like enkelt som å bestille en tjeneste i en nettbutikk. Kunden velger pakke, du godkjenner, Stripe håndterer betalingen, og statusflyten sikrer trygg og profesjonell leveranse. En komplett plattform for småbedrifter som trenger rask, pålitelig og moderne webhjelp.
+Micro‑fix gjør teknisk webhjelp like enkelt som å bestille en tjeneste i en nettbutikk. Velg pakke - Vi godkjenner forespørselen og starter arbeidet, og du betaler først når jobben er fullført som avtalt.
+
+
+ Stripe håndterer betalingen, og statusflyten sikrer trygg og profesjonell leveranse. En komplett plattform for småbedrifter som trenger rask, pålitelig og moderne webhjelp.
 
 
 

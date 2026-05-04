@@ -19,11 +19,11 @@ export default async function HomePage() {
                 Premium, norsk teknisk hjelp for WordPress, nettbutikk og web-feil.
               </h1>
               <p className="mt-6 max-w-xl text-lg text-slate-600">
-                Få et ryddig og enkel bestillingsforløp, profesjonell godkjenning og trygg betaling først når jobben er godkjent.
+                Micro-fix gjør teknisk webhjelp like enkelt som å bestille en tjeneste i en nettbutikk. Velg pakke — Vi godkjenner forespørselen og starter arbeidet, og du betaler først når jobben er fullført som avtalt.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <Link href={user ? '/dashboard' : '/login'} className="rounded-full bg-slate-900 px-6 py-3 text-white shadow hover:bg-slate-800">
-                  {user ? 'Gå til mitt dashboard' : 'Start nå'}
+                <Link href={user ? '/fix/new' : '/login'} className="rounded-full bg-slate-900 px-6 py-3 text-white shadow hover:bg-slate-800">
+                  {user ? 'Ny forespørsel' : 'Start nå'}
                 </Link>
                 {user?.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL && (
                   <Link href="/admin/dashboard" className="rounded-full border border-slate-300 px-6 py-3 text-slate-900 hover:bg-slate-100">
