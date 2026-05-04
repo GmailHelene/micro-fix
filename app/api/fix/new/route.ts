@@ -1,40 +1,38 @@
-import { cookies } from 'next/headers';
-import { NextResponse } from 'next/server';
-import { createServerClient } from '@supabase/auth-helpers-nextjs';
+import { NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
 
 export async function POST(req: Request) {
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { cookies: cookieStore }
-  );
+  const supabase = createClient();
+  const body = await req.json();
 
-  const { title, description, category, packageName, price, estimatedTime } = await req.json();
-
+  // Hent innlogget bruker
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return NextResponse.json({ error: 'Ikke innlogget' }, { status: 401 });
+    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
-  const { error } = await supabase.from('fix_requests').insert({
-    user_id: user.id,
-    title,
-    description,
-    category,
-    package_name: packageName,
-    price,
-    estimated_time: estimatedTime,
-    status: 'pending_approval',
-    payment_status: 'unpaid',
-  });
+  const { title, description, category, price, pkg } = body;
+
+  const { data, error } = await supabase
+    .from("fixes")
+    .insert({
+      user_id: user.id,
+      title,
+      description,
+      category,
+      price,
+      package: pkg,
+      status: "submitted",
+    })
+    .select()
+    .single();
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 400 });
   }
 
-  return NextResponse.json({ success: true });
+  return NextResponse.json({ fix: data });
 }
