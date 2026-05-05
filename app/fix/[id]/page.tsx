@@ -88,13 +88,14 @@ function FixDetailContent() {
   const [savingAccess, setSavingAccess] = useState(false);
   const [loading, setLoading] = useState(true);
   const [paying, setPaying] = useState(false);
+  const [payError, setPayError] = useState<string | null>(null);
   const [sendingMsg, setSendingMsg] = useState(false);
   const [respondingOffer, setRespondingOffer] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
-  const showToast = (msg: string) => {
+  const showToast = (msg: string, duration = 6000) => {
     setToast(msg);
-    setTimeout(() => setToast(null), 3500);
+    setTimeout(() => setToast(null), duration);
   };
 
   const fetchFix = useCallback(async () => {
@@ -132,16 +133,22 @@ function FixDetailContent() {
   const handlePay = async () => {
     if (!fix) return;
     setPaying(true);
-    const res = await fetch('/api/stripe/create-checkout-session', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ requestId: id }),
-    });
-    const data = await res.json();
-    if (data.url) {
-      window.location.href = data.url;
-    } else {
-      showToast(data.error || 'Noe gikk galt. Prøv igjen.');
+    setPayError(null);
+    try {
+      const res = await fetch('/api/stripe/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ requestId: id }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        setPayError(data.error || 'Noe gikk galt. Prøv igjen.');
+        setPaying(false);
+      }
+    } catch {
+      setPayError('Nettverksfeil — sjekk internettforbindelsen og prøv igjen.');
       setPaying(false);
     }
   };
@@ -236,19 +243,26 @@ function FixDetailContent() {
 
         {/* Betalingsbanner */}
         {needsPayment && (
-          <div className="rounded-2xl bg-blue-600 text-white p-6 mb-6 flex items-center justify-between gap-4 shadow-lg flex-wrap">
-            <div>
-              <p className="font-bold text-lg">Jobben er godkjent — klar til betaling</p>
-              <p className="text-blue-100 text-sm mt-1">Arbeidet starter umiddelbart etter betaling. Trygt via Stripe.</p>
+          <>
+            <div className="rounded-2xl bg-blue-600 text-white p-6 mb-3 flex items-center justify-between gap-4 shadow-lg flex-wrap">
+              <div>
+                <p className="font-bold text-lg">Jobben er godkjent — klar til betaling</p>
+                <p className="text-blue-100 text-sm mt-1">Arbeidet starter umiddelbart etter betaling. Trygt via Stripe.</p>
+              </div>
+              <button
+                onClick={handlePay}
+                disabled={paying}
+                className="shrink-0 rounded-full bg-white text-blue-700 font-bold px-6 py-3 hover:bg-blue-50 transition-colors disabled:opacity-60"
+              >
+                {paying ? 'Venter...' : `Betal ${fix.price} kr`}
+              </button>
             </div>
-            <button
-              onClick={handlePay}
-              disabled={paying}
-              className="shrink-0 rounded-full bg-white text-blue-700 font-bold px-6 py-3 hover:bg-blue-50 transition-colors disabled:opacity-60"
-            >
-              {paying ? 'Venter...' : `Betal ${fix.price} kr`}
-            </button>
-          </div>
+            {payError && (
+              <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 mb-4 text-sm text-red-800 font-medium">
+                ⚠️ Feil: {payError}
+              </div>
+            )}
+          </>
         )}
 
         {/* Endringer ønsket */}

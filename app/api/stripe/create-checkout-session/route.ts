@@ -31,14 +31,22 @@ export async function POST(req: NextRequest) {
 
   const origin = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 
+  const unitAmount = Math.round((fix.price || 0) * 100);
+  console.log('[stripe-checkout] Creating session', {
+    fixId: fix.id,
+    title: fix.title,
+    price: fix.price,
+    unitAmount,
+    origin,
+  });
+
   try {
     const stripe = new Stripe(secretKey, { apiVersion: '2026-04-22.dahlia' });
 
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'], // klarna støtter ikke manual capture
+      payment_method_types: ['card'],
       mode: 'payment',
       customer_email: user.email || undefined,
-      // Reserver kortet — trekkes kun når jobben er fullført
       payment_intent_data: {
         capture_method: 'manual',
         metadata: { request_id: fix.id, user_id: user.id },
@@ -50,7 +58,7 @@ export async function POST(req: NextRequest) {
             name: fix.title,
             description: 'Betaling for CodeMedic oppdrag',
           },
-          unit_amount: Math.round((fix.price || 0) * 100),
+          unit_amount: unitAmount,
         },
         quantity: 1,
       }],
@@ -59,9 +67,12 @@ export async function POST(req: NextRequest) {
       cancel_url: `${origin}/fix/${fix.id}`,
     });
 
+    console.log('[stripe-checkout] Session created:', session.id);
     return NextResponse.json({ url: session.url });
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Stripe-feil';
+    // Log full error server-side for Vercel logs
+    console.error('[stripe-checkout] ERROR:', err);
+    const message = err instanceof Error ? err.message : 'Ukjent Stripe-feil';
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
