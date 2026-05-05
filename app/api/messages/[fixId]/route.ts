@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceSupabase, getSessionUser } from '@/app/lib/supabaseServer';
+import { sendMessageNotificationEmail } from '@/app/lib/email';
 
 export async function GET(
   _req: NextRequest,
@@ -17,7 +18,6 @@ export async function GET(
     .order('created_at', { ascending: true });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-
   return NextResponse.json(data ?? []);
 }
 
@@ -33,7 +33,6 @@ export async function POST(
   if (!content?.trim()) return NextResponse.json({ error: 'Tom melding' }, { status: 400 });
 
   const supabase = createServiceSupabase();
-
   const isAdmin = user.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL;
   const senderRole: 'admin' | 'customer' = isAdmin ? 'admin' : 'customer';
 
@@ -47,8 +46,30 @@ export async function POST(
     sender: senderRole,
     user_id: user.id,
   });
-
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+
+  // E-postvarsling til kunde når admin sender melding
+  if (senderRole === 'admin') {
+    const { data: fix } = await supabase
+      .from('fix_requests')
+      .select('title, user_id')
+      .eq('id', fixId)
+      .single();
+
+    if (fix) {
+      const { data: profile } = await supabase.auth.admin.getUserById(fix.user_id);
+      const customerEmail = profile?.user?.email;
+      if (customerEmail) {
+        const preview = content.trim().slice(0, 200);
+        await sendMessageNotificationEmail({
+          to: customerEmail,
+          fixTitle: fix.title,
+          fixId,
+          messagePreview: preview,
+        }).catch(() => null);
+      }
+    }
+  }
 
   return NextResponse.json({ success: true });
 }

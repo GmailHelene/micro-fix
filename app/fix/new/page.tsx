@@ -23,6 +23,8 @@ export default function NewFixPage() {
   const [otherDescription, setOtherDescription] = useState('');
   const [pageUrl, setPageUrl]       = useState('');
   const [screenshotUrl, setScreenshotUrl] = useState('');
+  const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
+  const [uploadingScreenshot, setUploadingScreenshot] = useState(false);
   const [triedBefore, setTriedBefore] = useState('');
   const [criticality, setCriticality] = useState('medium');
   const [category, setCategory]     = useState(categories[0].id);
@@ -45,6 +47,28 @@ export default function NewFixPage() {
 
   const selectedPackage = packages.find(p => p.id === packageId) ?? packages[0];
   const selectedCategory = categories.find(c => c.id === category) ?? categories[0];
+
+  const handleScreenshotUpload = async (file: File) => {
+    setUploadingScreenshot(true);
+    setError(null);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { setUploadingScreenshot(false); return; }
+    const ext = file.name.split('.').pop()?.toLowerCase() ?? 'jpg';
+    const path = `${user.id}/${Date.now()}.${ext}`;
+    const { data, error: uploadError } = await supabase.storage
+      .from('fix-screenshots')
+      .upload(path, file, { upsert: false });
+    if (uploadError || !data) {
+      setError('Opplasting feilet — bruk en lenke (Imgur, Google Drive o.l.) i stedet.');
+      setUploadingScreenshot(false);
+      return;
+    }
+    const { data: { publicUrl } } = supabase.storage
+      .from('fix-screenshots')
+      .getPublicUrl(data.path);
+    setScreenshotUrl(publicUrl);
+    setUploadingScreenshot(false);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -291,20 +315,73 @@ export default function NewFixPage() {
               <div>
                 <label className="block text-sm font-semibold text-slate-800 mb-1.5">
                   Skjermbilde
-                  <span className="text-xs font-normal text-slate-500 ml-2">Valgfritt — lim inn lenke (Imgur, Google Drive, Dropbox o.l.)</span>
+                  <span className="text-xs font-normal text-slate-500 ml-2">Valgfritt</span>
                 </label>
-                <input
-                  type="text"
-                  className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-slate-300"
-                  placeholder="imgur.com/ditt-skjermbilde eller full https://-lenke"
-                  value={screenshotUrl}
-                  onChange={e => setScreenshotUrl(e.target.value)}
-                  onBlur={e => {
-                    const v = e.target.value.trim();
-                    if (v && !/^https?:\/\//i.test(v)) setScreenshotUrl('https://' + v);
-                  }}
-                />
-                <p className="text-xs text-slate-400 mt-1">Tips: Ta skjermbilde → last opp på imgur.com (gratis) → lim inn lenken</p>
+
+                {/* Last opp direkte */}
+                <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4 mb-2 relative">
+                  {screenshotFile && screenshotUrl ? (
+                    <div className="flex items-center gap-3">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={screenshotUrl} alt="Forhåndsvisning" className="w-16 h-16 object-cover rounded-lg border border-slate-200" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold text-emerald-700 truncate">✓ {screenshotFile.name}</p>
+                        <p className="text-xs text-slate-400 mt-0.5">Opplastet</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => { setScreenshotFile(null); setScreenshotUrl(''); }}
+                        className="text-xs text-red-500 hover:text-red-700 shrink-0"
+                      >
+                        Fjern
+                      </button>
+                    </div>
+                  ) : uploadingScreenshot ? (
+                    <div className="text-center py-2">
+                      <p className="text-xs text-slate-500 animate-pulse">Laster opp...</p>
+                    </div>
+                  ) : (
+                    <label className="flex flex-col items-center gap-1 cursor-pointer">
+                      <span className="text-2xl">📎</span>
+                      <span className="text-sm font-medium text-slate-700">Last opp bilde</span>
+                      <span className="text-xs text-slate-400">PNG, JPG, GIF — maks 5 MB</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="sr-only"
+                        onChange={e => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            if (file.size > 5 * 1024 * 1024) {
+                              setError('Bildet er for stort — maks 5 MB.');
+                              return;
+                            }
+                            setScreenshotFile(file);
+                            handleScreenshotUpload(file);
+                          }
+                        }}
+                      />
+                    </label>
+                  )}
+                </div>
+
+                {/* Alternativt: Lim inn URL */}
+                {!screenshotFile && (
+                  <>
+                    <p className="text-xs text-slate-400 mb-1.5 text-center">— eller lim inn lenke —</p>
+                    <input
+                      type="text"
+                      className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-slate-300"
+                      placeholder="imgur.com/ditt-skjermbilde eller full https://-lenke"
+                      value={screenshotUrl}
+                      onChange={e => setScreenshotUrl(e.target.value)}
+                      onBlur={e => {
+                        const v = e.target.value.trim();
+                        if (v && !/^https?:\/\//i.test(v)) setScreenshotUrl('https://' + v);
+                      }}
+                    />
+                  </>
+                )}
               </div>
 
               <div>

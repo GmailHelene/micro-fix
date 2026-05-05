@@ -9,7 +9,8 @@ interface Fix {
   created_at: string; user_id: string; category?: string;
   package_name?: string; price?: number; estimated_time?: string;
   payment_status?: string; access_info?: string; admin_note?: string;
-  custom_payment_url?: string;
+  custom_payment_url?: string; internal_note?: string;
+  rating?: number; feedback_text?: string;
 }
 interface Message {
   id: string; content: string; sender: 'customer' | 'admin'; created_at: string;
@@ -39,6 +40,8 @@ export default function AdminFixDetailPage() {
   const [offerNote, setOfferNote] = useState('');
   const [offerPrice, setOfferPrice] = useState('');
   const [sendingMsg, setSendingMsg] = useState(false);
+  const [internalNote, setInternalNote] = useState('');
+  const [savingNote, setSavingNote] = useState(false);
   const [working, setWorking] = useState(false);
   const [stripeUrl, setStripeUrl] = useState<string | null>(null);
   const [customPaymentInput, setCustomPaymentInput] = useState('');
@@ -57,6 +60,7 @@ export default function AdminFixDetailPage() {
       setFix(data);
       setCustomPrice(String(data.price ?? ''));
       setCustomPaymentInput(data.custom_payment_url ?? '');
+      setInternalNote(data.internal_note ?? '');
     }
     setLoading(false);
   }, [id]);
@@ -513,6 +517,51 @@ export default function AdminFixDetailPage() {
                     </div>
                   )}
                 </div>
+              </div>
+            )}
+
+            {/* Interne notater — kun synlig for admin */}
+            <div className="rounded-3xl bg-amber-50 border border-amber-200 p-5">
+              <h3 className="text-sm font-semibold text-amber-800 mb-1">🔒 Interne notater</h3>
+              <p className="text-xs text-amber-600 mb-3">Kun synlig for deg — vises aldri til kunden.</p>
+              <textarea
+                value={internalNote}
+                onChange={e => setInternalNote(e.target.value)}
+                placeholder="F.eks. notater om teknisk gjennomgang, kontakt med kunde, hva som ble gjort..."
+                className="w-full rounded-xl border border-amber-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-amber-300 mb-2"
+                rows={4}
+              />
+              <button
+                onClick={async () => {
+                  setSavingNote(true);
+                  const res = await fetch(`/api/admin/fix/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ internal_note: internalNote }),
+                  });
+                  const data = await res.json();
+                  if (!data.error) showToast('Notat lagret');
+                  else showToast(data.error, 'err');
+                  setSavingNote(false);
+                }}
+                disabled={savingNote}
+                className="w-full rounded-xl bg-amber-600 text-white px-4 py-2.5 text-xs font-semibold hover:bg-amber-700 disabled:opacity-40 transition-colors"
+              >
+                {savingNote ? 'Lagrer...' : 'Lagre notat'}
+              </button>
+            </div>
+
+            {/* Tilbakemelding fra kunde */}
+            {fix.rating && (
+              <div className="rounded-3xl bg-white border border-slate-200 p-5">
+                <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Kundens vurdering</h3>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-xl">{'⭐'.repeat(fix.rating)}</span>
+                  <span className="text-sm font-bold text-slate-700">{fix.rating}/5</span>
+                </div>
+                {fix.feedback_text && (
+                  <p className="text-sm text-slate-600 italic leading-relaxed">&ldquo;{fix.feedback_text}&rdquo;</p>
+                )}
               </div>
             )}
 

@@ -17,6 +17,8 @@ interface Fix {
   payment_status?: string;
   access_info?: string;
   admin_note?: string;
+  rating?: number;
+  feedback_text?: string;
 }
 
 interface Message {
@@ -92,6 +94,11 @@ function FixDetailContent() {
   const [sendingMsg, setSendingMsg] = useState(false);
   const [respondingOffer, setRespondingOffer] = useState(false);
   const [cancelling, setCancelling] = useState(false);
+  const [feedbackRating, setFeedbackRating] = useState(0);
+  const [feedbackHover, setFeedbackHover] = useState(0);
+  const [feedbackText, setFeedbackText] = useState('');
+  const [submittingFeedback, setSubmittingFeedback] = useState(false);
+  const [feedbackDone, setFeedbackDone] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
   const showToast = (msg: string, duration = 6000) => {
@@ -200,6 +207,24 @@ function FixDetailContent() {
     }
   };
 
+  const handleSubmitFeedback = async () => {
+    if (!feedbackRating) return;
+    setSubmittingFeedback(true);
+    const res = await fetch(`/api/fix/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rating: feedbackRating, feedback_text: feedbackText }),
+    });
+    setSubmittingFeedback(false);
+    if (res.ok) {
+      setFeedbackDone(true);
+      showToast('Takk for tilbakemeldingen! 🙏');
+      fetchFix();
+    } else {
+      showToast('Noe gikk galt. Prøv igjen.');
+    }
+  };
+
   const handleSaveAccessInfo = async () => {
     setSavingAccess(true);
     const res = await fetch(`/api/fix/${id}`, {
@@ -226,6 +251,8 @@ function FixDetailContent() {
   const sc = statusColors[fix.status] ?? statusColors.pending_approval;
   const needsPayment = fix.status === 'awaiting_payment' && fix.payment_status === 'unpaid';
   const hasOffer = fix.status === 'awaiting_offer_approval';
+  const isPaid = fix.payment_status === 'paid' || fix.payment_status === 'authorized';
+  const showFeedback = fix.status === 'completed' && !fix.rating && !feedbackDone;
   const showAccessSection = ['awaiting_payment', 'in_progress', 'completed'].includes(fix.status);
   const canCancel = fix.status === 'pending_approval';
 
@@ -325,6 +352,93 @@ function FixDetailContent() {
                 ✕ Avslå tilbud
               </button>
             </div>
+          </div>
+        )}
+
+        {/* Betalingskvittering */}
+        {isPaid && fix.status !== 'awaiting_payment' && (
+          <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-5 mb-6 flex items-start gap-4">
+            <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center text-xl shrink-0">✓</div>
+            <div className="flex-1">
+              <p className="font-bold text-emerald-800">Betaling bekreftet</p>
+              <p className="text-sm text-emerald-700 mt-0.5">
+                {fix.payment_status === 'authorized'
+                  ? 'Beløpet er reservert på kortet ditt og trekkes automatisk når jobben er fullført og godkjent av deg.'
+                  : 'Betalingen er gjennomført og jobben er fullført.'}
+              </p>
+              <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+                <div className="rounded-lg bg-white border border-emerald-100 px-3 py-2">
+                  <p className="text-emerald-500 mb-0.5">Beløp</p>
+                  <p className="font-bold text-emerald-800">{fix.price != null ? `${fix.price} kr` : '—'}</p>
+                </div>
+                <div className="rounded-lg bg-white border border-emerald-100 px-3 py-2">
+                  <p className="text-emerald-500 mb-0.5">Saksnr.</p>
+                  <p className="font-bold text-emerald-800 font-mono">#{fix.id.slice(0, 8).toUpperCase()}</p>
+                </div>
+                <div className="rounded-lg bg-white border border-emerald-100 px-3 py-2">
+                  <p className="text-emerald-500 mb-0.5">Status</p>
+                  <p className="font-bold text-emerald-800">{fix.payment_status === 'authorized' ? 'Reservert' : 'Betalt'}</p>
+                </div>
+                <div className="rounded-lg bg-white border border-emerald-100 px-3 py-2">
+                  <p className="text-emerald-500 mb-0.5">Metode</p>
+                  <p className="font-bold text-emerald-800">Stripe / Kort</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tilbakemeldingsskjema */}
+        {showFeedback && (
+          <div className="rounded-2xl bg-white border border-slate-200 p-6 mb-6 shadow-sm">
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Jobben er fullført!</p>
+            <h2 className="font-bold text-slate-900 text-lg mb-1">Gi en vurdering</h2>
+            <p className="text-sm text-slate-500 mb-4">Hjelper oss å bli bedre — tar bare 10 sekunder.</p>
+            <div className="flex gap-2 mb-4">
+              {[1, 2, 3, 4, 5].map(star => (
+                <button
+                  key={star}
+                  type="button"
+                  onClick={() => setFeedbackRating(star)}
+                  onMouseEnter={() => setFeedbackHover(star)}
+                  onMouseLeave={() => setFeedbackHover(0)}
+                  className="text-3xl transition-transform hover:scale-110"
+                >
+                  {star <= (feedbackHover || feedbackRating) ? '⭐' : '☆'}
+                </button>
+              ))}
+            </div>
+            {feedbackRating > 0 && (
+              <p className="text-xs text-slate-500 mb-3">
+                {feedbackRating === 5 ? '🎉 Tusen takk!' :
+                 feedbackRating === 4 ? '😊 Bra, takk!' :
+                 feedbackRating === 3 ? '🤔 Greit, takk!' :
+                 feedbackRating === 2 ? '😕 Vi beklager!' :
+                 '😟 Vi beklager — vi tar det til etterretning!'}
+              </p>
+            )}
+            <textarea
+              value={feedbackText}
+              onChange={e => setFeedbackText(e.target.value)}
+              placeholder="Valgfri kommentar — hva fungerte bra eller kan bli bedre?"
+              className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-slate-300 mb-3"
+              rows={3}
+            />
+            <button
+              onClick={handleSubmitFeedback}
+              disabled={submittingFeedback || feedbackRating === 0}
+              className="rounded-full bg-slate-900 px-6 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-40 transition-colors"
+            >
+              {submittingFeedback ? 'Sender...' : 'Send tilbakemelding'}
+            </button>
+          </div>
+        )}
+
+        {/* Viser allerede avgitt tilbakemelding */}
+        {fix.status === 'completed' && fix.rating && !showFeedback && (
+          <div className="rounded-2xl bg-slate-50 border border-slate-200 px-5 py-4 mb-6 flex items-center gap-3">
+            <span className="text-xl">{'⭐'.repeat(fix.rating)}</span>
+            <span className="text-sm text-slate-600">Takk for din vurdering!</span>
           </div>
         )}
 

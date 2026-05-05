@@ -112,7 +112,7 @@ export default async function HomePage() {
               <div className="grid gap-12 lg:grid-cols-[3fr_2fr] lg:items-center">
                 <div>
                   <div className="flex items-center gap-3 mb-6">
-                    <Image src="/logo.png" alt="CodeMedic" width={68} height={68} className="rounded-2xl" />
+                    <Image src="/logo.png" alt="CodeMedic" width={88} height={88} className="rounded-2xl" />
                     <p className="text-xs uppercase tracking-[0.35em] text-slate-400 font-medium">CodeMedic</p>
                   </div>
                   <h1 className="text-4xl md:text-5xl font-bold leading-[1.1] text-slate-900 tracking-tight">
@@ -127,7 +127,7 @@ export default async function HomePage() {
                       href={user ? '/fix/new' : '/login'}
                       className="rounded-full bg-slate-900 px-7 py-3.5 text-sm font-semibold text-white hover:bg-slate-800 transition-colors shadow-sm"
                     >
-                      {user ? 'Send ny forespørsel →' : 'Kom i gang — det er gratis →'}
+                      {user ? 'Send ny forespørsel →' : 'Kom i gang →'}
                     </Link>
                     <span className="text-xs text-slate-400 sm:ml-1">Ingen bindingstid. Betal kun for det du godkjenner.</span>
                   </div>
@@ -483,7 +483,7 @@ export default async function HomePage() {
                   href={user ? '/fix/new' : '/login'}
                   className="rounded-full bg-white text-slate-900 px-8 py-3.5 text-sm font-bold hover:bg-slate-100 transition-colors shadow"
                 >
-                  {user ? 'Send ny forespørsel →' : 'Kom i gang — det er gratis →'}
+                  {user ? 'Send ny forespørsel →' : 'Kom i gang →'}
                 </Link>
                 <a
                   href="mailto:support@codemedic.no"
@@ -516,7 +516,10 @@ export default async function HomePage() {
             </div>
             <div className="border-t border-slate-100 pt-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-300">
               <span>© {new Date().getFullYear()} CodeMedic. Alle rettigheter forbeholdt.</span>
-              <span>Norsk tjeneste · Trygt via Stripe · No cure, no pay</span>
+              <div className="flex items-center gap-4">
+                <Link href="/personvern" className="hover:text-slate-500 transition-colors">Personvern</Link>
+                <span>Norsk tjeneste · Trygt via Stripe · No cure, no pay</span>
+              </div>
             </div>
           </div>
         </footer>

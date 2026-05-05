@@ -45,6 +45,7 @@ export async function PUT(
   if (body.price !== undefined && body.status !== 'awaiting_offer_approval') updates.price = body.price;
   if (body.custom_payment_url !== undefined)  updates.custom_payment_url = body.custom_payment_url;
   if (body.payment_status !== undefined)      updates.payment_status = body.payment_status;
+  if (body.internal_note !== undefined)       updates.internal_note = body.internal_note;
 
   const { data: fixBefore } = await supabase
     .from('fix_requests').select('title, user_id, price, payment_intent_id').eq('id', id).single();

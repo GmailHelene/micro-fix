@@ -136,6 +136,45 @@ export async function sendAdminEventEmail({
   }).catch(() => null);
 }
 
+// ── Varsling til kunde når admin sender melding ───────────────────────────
+export async function sendMessageNotificationEmail({
+  to,
+  fixTitle,
+  fixId,
+  messagePreview,
+}: {
+  to: string;
+  fixTitle: string;
+  fixId: string;
+  messagePreview: string;
+}) {
+  if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) return;
+  const transporter = createTransporter();
+  const base = process.env.NEXT_PUBLIC_BASE_URL || 'https://codemedic.no';
+  const from = process.env.EMAIL_FROM ?? process.env.SMTP_USER;
+
+  await transporter.sendMail({
+    from: `CodeMedic <${from}>`,
+    to,
+    subject: `💬 Ny melding fra CodeMedic — ${fixTitle}`,
+    html: `
+      <div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:32px 16px;color:#0f172a">
+        <p style="font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:#94a3b8;margin-bottom:8px">CodeMedic — Melding</p>
+        <h1 style="font-size:22px;font-weight:700;margin:0 0 8px">💬 Du har en ny melding</h1>
+        <p style="font-size:14px;color:#475569;margin:0 0 20px">Oppdrag: <strong>${fixTitle}</strong></p>
+        <div style="background:#f8fafc;border-left:4px solid #0f172a;padding:12px 16px;border-radius:4px;margin-bottom:24px">
+          <p style="font-size:14px;color:#334155;margin:0;font-style:italic">"${messagePreview}"</p>
+        </div>
+        <a href="${base}/fix/${fixId}" style="display:inline-block;background:#0f172a;color:#fff;text-decoration:none;padding:12px 24px;border-radius:9999px;font-size:14px;font-weight:600">
+          Se melding og svar →
+        </a>
+        <hr style="border:none;border-top:1px solid #e2e8f0;margin:32px 0"/>
+        <p style="font-size:12px;color:#94a3b8">CodeMedic — Premium teknisk hjelp for WordPress og nettbutikk</p>
+      </div>
+    `,
+  }).catch(() => null);
+}
+
 const statusMessages: Record<string, { subject: string; heading: string; body: string }> = {
   new_request: {
     subject: '📬 Vi har mottatt forespørselen din',

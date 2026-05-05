@@ -43,6 +43,15 @@ export async function PUT(
   if (body.description !== undefined) allowed.description = body.description;
   if (body.access_info !== undefined) allowed.access_info = body.access_info;
 
+  // Kunde kan gi tilbakemelding etter fullføring
+  if (body.rating !== undefined && currentFix.status === 'completed') {
+    const r = Number(body.rating);
+    if (r >= 1 && r <= 5) {
+      allowed.rating = r;
+      if (body.feedback_text !== undefined) allowed.feedback_text = body.feedback_text;
+    }
+  }
+
   // Kunde trekker tilbake forespørsel (kun fra pending_approval)
   if (body.cancel_request === true) {
     if (currentFix.status === 'pending_approval') {
