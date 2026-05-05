@@ -33,7 +33,7 @@ export default function LoginPage() {
       return;
     }
 
-    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
 
     if (signInError) {
@@ -41,7 +41,8 @@ export default function LoginPage() {
       return;
     }
 
-    router.push('/dashboard');
+    const isAdmin = data.user?.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+    router.push(isAdmin ? '/admin/dashboard' : '/dashboard');
   };
 
   return (
