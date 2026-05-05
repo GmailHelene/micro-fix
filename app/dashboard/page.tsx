@@ -102,7 +102,7 @@ export default async function DashboardPage() {
             <div className="rounded-3xl bg-white border border-slate-200 p-16 text-center shadow-sm">
               <div className="text-5xl mb-4">📋</div>
               <p className="text-lg font-semibold text-slate-900 mb-2">Ingen forespørsler ennå</p>
-              <p className="text-slate-500 mb-6 text-sm">Send inn din første forespørsel og få profesjonell hjelp innen 24–48 timer.</p>
+              <p className="text-slate-500 mb-6 text-sm">Send inn din første forespørsel og få profesjonell hjelp innen 1–3 dager.</p>
               <Link href="/fix/new" className="inline-flex rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white hover:bg-slate-800 transition-colors">
                 Start ny forespørsel →
               </Link>
@@ -115,12 +115,12 @@ export default async function DashboardPage() {
             const needsAccess = fix.status === 'in_progress' && !fix.access_info;
             const needsOfferResponse = fix.status === 'awaiting_offer_approval';
 
-            // Forventet levering: 24-48t etter siste oppdatering i in_progress
+            // Forventet levering: 1-3 dager etter siste oppdatering i in_progress
             const expectedDelivery = fix.status === 'in_progress' && fix.access_info
               ? (() => {
                   const base = new Date(fix.updated_at ?? fix.created_at);
-                  const d1 = new Date(base); d1.setHours(d1.getHours() + 24);
-                  const d2 = new Date(base); d2.setHours(d2.getHours() + 48);
+                  const d1 = new Date(base); d1.setDate(d1.getDate() + 1);
+                  const d2 = new Date(base); d2.setDate(d2.getDate() + 3);
                   return `${d1.toLocaleDateString('no-NO')}–${d2.toLocaleDateString('no-NO')}`;
                 })()
               : null;

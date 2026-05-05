@@ -115,7 +115,7 @@ export default function NewFixPage() {
               </li>
               <li className="flex gap-3">
                 <span className="w-6 h-6 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">3</span>
-                <span>Etter betaling starter arbeidet umiddelbart. Levering innen 24–48 timer.</span>
+                <span>Etter betaling starter arbeidet umiddelbart. Levering innen 1–3 dager.</span>
               </li>
             </ol>
           </div>

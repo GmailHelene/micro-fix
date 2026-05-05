@@ -119,7 +119,7 @@ export default async function HomePage() {
                     Norsk, profesjonell hjelp med WordPress og web-feil.
                   </h1>
                   <p className="mt-5 text-lg text-slate-500 leading-relaxed max-w-lg">
-                    Beskriv problemet ditt, velg pakke og få det løst innen 24–48 timer.
+                    Beskriv problemet ditt, velg pakke og få det løst innen 1–3 dager.
                     Du betaler <strong className="text-slate-700">kun når jobben er godkjent og ferdig</strong>.
                   </p>
                   <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -137,7 +137,7 @@ export default async function HomePage() {
                 <div className="grid grid-cols-2 gap-3">
                   {[
                     { icon: '🛡️', label: 'No cure, no pay', sub: 'Full refusjon om vi ikke løser det' },
-                    { icon: '⚡', label: '24–48 t levering', sub: 'Rask behandling og svar' },
+                    { icon: '⚡', label: '1–3 dagers levering', sub: 'Rask behandling og svar' },
                     { icon: '🔒', label: 'Trygg betaling', sub: 'Stripe — reservert, ikke trukket' },
                     { icon: '🇳🇴', label: 'Norsk support', sub: 'På norsk, av norsk utvikler' },
                   ].map(t => (
@@ -394,7 +394,7 @@ export default async function HomePage() {
             <div className="grid gap-4 sm:grid-cols-3">
               {[
                 { icon: '🛡️', title: 'No cure, no pay', desc: 'Full refusjon om vi ikke kan løse problemet — ingen diskusjon.' },
-                { icon: '⏱️', title: '24–48 t levering', desc: 'De fleste oppdrag leveres innen 24–48 timer etter betalt reservasjon.' },
+                { icon: '⏱️', title: '1–3 dagers levering', desc: 'De fleste oppdrag leveres innen 1–3 dager etter betalt reservasjon.' },
                 { icon: '💬', title: 'Norsk kommunikasjon', desc: 'Alt foregår på norsk. Ingen språkbarrierer, ingen misforståelser.' },
               ].map(g => (
                 <div key={g.title} className="rounded-2xl bg-white border border-slate-200 p-6 shadow-sm text-center">
