@@ -1,21 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import Stripe from 'stripe';
-import { createServerClient } from '@supabase/auth-helpers-nextjs';
+import { createServiceSupabase, getSessionUser } from '@/app/lib/supabaseServer';
 
 const getStripe = () => {
   const secretKey = process.env.STRIPE_SECRET_KEY;
   if (!secretKey) throw new Error('Missing STRIPE_SECRET_KEY');
   return new Stripe(secretKey, { apiVersion: '2026-04-22.dahlia' });
-};
-
-const createSupabase = async () => {
-  const cookieStore = await cookies();
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { cookies: { get(name: string) { return cookieStore.get(name)?.value; } } }
-  );
 };
 
 // Map package name → Stripe Price ID (set via env vars)
@@ -28,11 +18,11 @@ const getPriceId = (packageName: string): string | null => {
 };
 
 export async function POST(req: NextRequest) {
-  const supabase = await createSupabase();
-  const { requestId } = await req.json();
-
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getSessionUser();
   if (!user) return NextResponse.json({ error: 'Ikke innlogget' }, { status: 401 });
+
+  const supabase = createServiceSupabase();
+  const { requestId } = await req.json();
 
   const { data: fix, error: fetchError } = await supabase
     .from('fix_requests')
@@ -52,35 +42,40 @@ export async function POST(req: NextRequest) {
   }
 
   const origin = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-  const stripe = getStripe();
 
-  const priceId = getPriceId(fix.package_name ?? '');
+  try {
+    const stripe = getStripe();
+    const priceId = getPriceId(fix.package_name ?? '');
 
-  const session = await stripe.checkout.sessions.create({
-    payment_method_types: ['card'], // klarna støtter ikke manual capture
-    mode: 'payment',
-    customer_email: user.email || undefined,
-    // Reserver kortet — trekkes kun når jobben er fullført (capture_method: manual)
-    payment_intent_data: {
-      capture_method: 'manual',
-      metadata: { request_id: fix.id, user_id: user.id },
-    },
-    line_items: [
-      priceId
-        ? { price: priceId, quantity: 1 }
-        : {
-            price_data: {
-              currency: 'nok',
-              product_data: { name: fix.title, description: 'Betaling for CodeMedic oppdrag' },
-              unit_amount: Math.round((fix.price || 0) * 100),
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'], // klarna støtter ikke manual capture
+      mode: 'payment',
+      customer_email: user.email || undefined,
+      // Reserver kortet — trekkes kun når jobben er fullført (capture_method: manual)
+      payment_intent_data: {
+        capture_method: 'manual',
+        metadata: { request_id: fix.id, user_id: user.id },
+      },
+      line_items: [
+        priceId
+          ? { price: priceId, quantity: 1 }
+          : {
+              price_data: {
+                currency: 'nok',
+                product_data: { name: fix.title, description: 'Betaling for CodeMedic oppdrag' },
+                unit_amount: Math.round((fix.price || 0) * 100),
+              },
+              quantity: 1,
             },
-            quantity: 1,
-          },
-    ],
-    metadata: { request_id: fix.id, user_id: user.id },
-    success_url: `${origin}/fix/${fix.id}?payment=success`,
-    cancel_url: `${origin}/fix/${fix.id}`,
-  });
+      ],
+      metadata: { request_id: fix.id, user_id: user.id },
+      success_url: `${origin}/fix/${fix.id}?payment=success`,
+      cancel_url: `${origin}/fix/${fix.id}`,
+    });
 
-  return NextResponse.json({ url: session.url });
+    return NextResponse.json({ url: session.url });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Stripe-feil';
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 }

@@ -1,32 +1,15 @@
-import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@supabase/auth-helpers-nextjs';
-
-const createSupabase = async () => {
-  const cookieStore = await cookies();
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
-        },
-      },
-    }
-  );
-};
+import { createServiceSupabase, getSessionUser } from '@/app/lib/supabaseServer';
 
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ fixId: string }> }
 ) {
   const { fixId } = await params;
-  const supabase = await createSupabase();
-  const { data: { user } } = await supabase.auth.getUser();
-
+  const user = await getSessionUser();
   if (!user) return NextResponse.json({ error: 'Ikke innlogget' }, { status: 401 });
 
+  const supabase = createServiceSupabase();
   const { data, error } = await supabase
     .from('fix_messages')
     .select('*')
@@ -43,14 +26,13 @@ export async function POST(
   { params }: { params: Promise<{ fixId: string }> }
 ) {
   const { fixId } = await params;
-  const supabase = await createSupabase();
-  const { data: { user } } = await supabase.auth.getUser();
-
+  const user = await getSessionUser();
   if (!user) return NextResponse.json({ error: 'Ikke innlogget' }, { status: 401 });
 
   const { content, sender } = await req.json();
-
   if (!content?.trim()) return NextResponse.json({ error: 'Tom melding' }, { status: 400 });
+
+  const supabase = createServiceSupabase();
 
   const isAdmin = user.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL;
   const senderRole: 'admin' | 'customer' = isAdmin ? 'admin' : 'customer';

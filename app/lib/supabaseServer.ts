@@ -30,3 +30,18 @@ export const createServiceSupabase = () =>
       global: { fetch: noStoreFetch },
     }
   );
+
+// Henter innlogget bruker fra session-cookie — bruk i API-ruter
+export const getSessionUser = async () => {
+  const cookieStore = await cookies();
+  const authClient = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: { get(name: string) { return cookieStore.get(name)?.value; } },
+      global: { fetch: noStoreFetch },
+    }
+  );
+  const { data: { user } } = await authClient.auth.getUser();
+  return user;
+};

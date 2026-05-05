@@ -1,34 +1,16 @@
-import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@supabase/auth-helpers-nextjs';
+import { createServiceSupabase, getSessionUser } from '@/app/lib/supabaseServer';
 import { sendAdminEventEmail } from '@/app/lib/email';
-
-const createSupabase = async () => {
-  const cookieStore = await cookies();
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-      cookies: {
-        get(name: string) { return cookieStore.get(name)?.value; },
-      },
-      global: {
-        fetch: (url: RequestInfo | URL, init?: RequestInit) =>
-          fetch(url, { ...init, cache: 'no-store' }),
-      },
-    }
-  );
-};
 
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const supabase = await createSupabase();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getSessionUser();
   if (!user) return NextResponse.json({ error: 'Ikke innlogget' }, { status: 401 });
 
+  const supabase = createServiceSupabase();
   const { data: fix, error } = await supabase
     .from('fix_requests').select('*').eq('id', id).eq('user_id', user.id).single();
   if (error || !fix) return NextResponse.json({ error: 'Forespørsel ikke funnet' }, { status: 404 });
@@ -42,9 +24,10 @@ export async function PUT(
 ) {
   const { id } = await params;
   const body = await req.json();
-  const supabase = await createSupabase();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getSessionUser();
   if (!user) return NextResponse.json({ error: 'Ikke innlogget' }, { status: 401 });
+
+  const supabase = createServiceSupabase();
 
   // Hent nåværende fix for kontekst (tittel, pris, status)
   const { data: currentFix } = await supabase
@@ -106,10 +89,10 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const supabase = await createSupabase();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getSessionUser();
   if (!user) return NextResponse.json({ error: 'Ikke innlogget' }, { status: 401 });
 
+  const supabase = createServiceSupabase();
   const { error } = await supabase
     .from('fix_requests').delete().eq('id', id).eq('user_id', user.id);
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
