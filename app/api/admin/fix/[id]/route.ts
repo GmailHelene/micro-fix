@@ -49,6 +49,8 @@ export async function PUT(
   if (body.admin_note !== undefined)          updates.admin_note = body.admin_note;
   if (body.price !== undefined)               updates.price = body.price;
   if (body.custom_payment_url !== undefined)  updates.custom_payment_url = body.custom_payment_url;
+  // Admin kan manuelt bekrefte betaling (brukt ved custom payment links)
+  if (body.payment_status !== undefined)      updates.payment_status = body.payment_status;
 
   const { data: fixBefore } = await supabase.from('fix_requests').select('title, user_id').eq('id', id).single();
 
@@ -110,7 +112,7 @@ export async function POST(
       quantity: 1,
     }],
     metadata: { request_id: fix.id, user_id: fix.user_id },
-    success_url: `${origin}/dashboard?payment=success`,
+    success_url: `${origin}/fix/${fix.id}?payment=success`,
     cancel_url: `${origin}/fix/${fix.id}`,
   });
 

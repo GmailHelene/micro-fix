@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/auth-helpers-nextjs';
+import { sendAdminNotificationEmail } from '@/app/lib/email';
 
 export async function POST(req: Request) {
   const cookieStore = await cookies();
@@ -16,7 +17,7 @@ export async function POST(req: Request) {
     }
   );
 
-  const { title, description, category, packageName, price, estimatedTime } = await req.json();
+  const { title, description, category, packageName, price } = await req.json();
 
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -42,6 +43,15 @@ export async function POST(req: Request) {
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 400 });
   }
+
+  // Varsle admin om ny forespørsel (brannmur: kast feil stille)
+  await sendAdminNotificationEmail({
+    fixTitle: title,
+    fixId: newFix.id,
+    customerEmail: user.email ?? 'Ukjent',
+    packageName,
+    category,
+  }).catch(() => null);
 
   return NextResponse.json({ success: true, id: newFix.id });
 }

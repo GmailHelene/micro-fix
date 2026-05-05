@@ -1,5 +1,64 @@
 import nodemailer from 'nodemailer';
 
+// ── Felles hjelpefunksjon for transporter ──────────────────────────────────
+function createTransporter() {
+  return nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT ?? 587),
+    secure: false,
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    },
+  });
+}
+
+// ── Admin-varsling ved ny forespørsel ──────────────────────────────────────
+export async function sendAdminNotificationEmail({
+  fixTitle,
+  fixId,
+  customerEmail,
+  packageName,
+  category,
+}: {
+  fixTitle: string;
+  fixId: string;
+  customerEmail: string;
+  packageName?: string;
+  category?: string;
+}) {
+  const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+  if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS || !adminEmail) return;
+
+  const transporter = createTransporter();
+  const base = process.env.NEXT_PUBLIC_BASE_URL || 'https://codemedic.no';
+  const from = process.env.EMAIL_FROM ?? process.env.SMTP_USER;
+
+  await transporter.sendMail({
+    from: `CodeMedic <${from}>`,
+    to: adminEmail,
+    subject: `📬 Ny forespørsel: ${fixTitle}`,
+    html: `
+      <div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:32px 16px;color:#0f172a">
+        <p style="font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:#94a3b8;margin-bottom:8px">CodeMedic — Ny forespørsel</p>
+        <h1 style="font-size:22px;font-weight:700;margin:0 0 16px">📬 Ny forespørsel kom inn</h1>
+        <table style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:20px">
+          <tr><td style="padding:6px 0;color:#64748b;width:120px">Tittel</td><td style="font-weight:600">${fixTitle}</td></tr>
+          <tr><td style="padding:6px 0;color:#64748b">Kunde</td><td>${customerEmail}</td></tr>
+          ${packageName ? `<tr><td style="padding:6px 0;color:#64748b">Pakke</td><td>${packageName}</td></tr>` : ''}
+          ${category ? `<tr><td style="padding:6px 0;color:#64748b">Kategori</td><td>${category}</td></tr>` : ''}
+          <tr><td style="padding:6px 0;color:#64748b">Saksnr.</td><td style="font-family:monospace">#${fixId.slice(0, 8).toUpperCase()}</td></tr>
+        </table>
+        <a href="${base}/admin/fix/${fixId}" style="display:inline-block;background:#0f172a;color:#fff;text-decoration:none;padding:12px 24px;border-radius:9999px;font-size:14px;font-weight:600">
+          Gå til forespørselen →
+        </a>
+        <hr style="border:none;border-top:1px solid #e2e8f0;margin:32px 0"/>
+        <p style="font-size:12px;color:#94a3b8">CodeMedic — Admin-varsling</p>
+      </div>
+    `,
+  }).catch(() => null);
+}
+
 const statusMessages: Record<string, { subject: string; heading: string; body: string }> = {
   awaiting_payment: {
     subject: '✅ Forespørselen din er godkjent — klar for betaling',
@@ -46,15 +105,7 @@ export async function sendStatusEmail({
   const msg = statusMessages[status];
   if (!msg) return;
 
-  const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT ?? 587),
-    secure: false,
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-  });
+  const transporter = createTransporter();
 
   const base = process.env.NEXT_PUBLIC_BASE_URL || 'https://codemedic.no';
   const from = process.env.EMAIL_FROM ?? process.env.SMTP_USER;

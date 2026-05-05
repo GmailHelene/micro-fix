@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
           },
     ],
     metadata: { request_id: fix.id, user_id: user.id },
-    success_url: `${origin}/dashboard?payment=success`,
+    success_url: `${origin}/fix/${fix.id}?payment=success`,
     cancel_url: `${origin}/fix/${fix.id}`,
   });
 

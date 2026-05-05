@@ -415,7 +415,34 @@ export default function AdminFixDetailPage() {
                     </button>
                   </div>
                   {fix.custom_payment_url && (
-                    <p className="text-xs text-emerald-600 mt-1.5">✓ Custom lenke er satt — kunden bruker denne ved betaling</p>
+                    <div className="mt-2 space-y-1.5">
+                      <p className="text-xs text-emerald-600">✓ Custom lenke er satt — kunden bruker denne ved betaling</p>
+                      {fix.payment_status !== 'paid' && (
+                        <div className="rounded-xl bg-amber-50 border border-amber-200 px-3 py-2.5 text-xs text-amber-800">
+                          <p className="font-semibold mb-1">⚠️ Manuell bekreftelse kreves</p>
+                          <p className="mb-2">Custom Stripe-lenker oppdaterer ikke status automatisk. Når du har bekreftet betaling i Stripe-dashboardet, klikk under:</p>
+                          <button
+                            disabled={working}
+                            onClick={async () => {
+                              if (!confirm('Bekreft at betaling er mottatt via Stripe-dashboardet?')) return;
+                              setWorking(true);
+                              const res = await fetch(`/api/admin/fix/${id}`, {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ payment_status: 'paid', status: 'in_progress' }),
+                              });
+                              const data = await res.json();
+                              if (!data.error) { fetchFix(); showToast('Betaling bekreftet — status satt til Under arbeid'); }
+                              else showToast(data.error, 'err');
+                              setWorking(false);
+                            }}
+                            className="rounded-lg bg-amber-600 text-white px-3 py-1.5 text-xs font-semibold hover:bg-amber-700 disabled:opacity-40 transition-colors"
+                          >
+                            ✓ Bekreft betaling mottatt
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
