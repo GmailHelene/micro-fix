@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { createServiceSupabase } from '../../lib/supabaseServer';
+import { createServerSupabase, createServiceSupabase } from '../../lib/supabaseServer';
 import { statusLabels, statusColors } from '../../lib/fixOptions';
 
 export const dynamic = 'force-dynamic';
@@ -20,9 +20,13 @@ export default async function AdminDashboardPage({
 }: {
   searchParams: Promise<{ filter?: string; q?: string; sort?: string }>;
 }) {
-  const supabase = await createServiceSupabase();
-  const { data: { user } } = await supabase.auth.getUser();
+  // Auth: les innlogget bruker fra session-cookie
+  const authClient = await createServerSupabase();
+  const { data: { user } } = await authClient.auth.getUser();
   if (!user || user.email !== process.env.NEXT_PUBLIC_ADMIN_EMAIL) redirect('/login');
+
+  // Data: ren service-role-klient uten bruker-JWT → garantert RLS-bypass
+  const supabase = createServiceSupabase();
 
   const { filter = 'all', q = '', sort = 'newest' } = await searchParams;
 
