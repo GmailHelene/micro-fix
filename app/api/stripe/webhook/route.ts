@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
-import { sendStatusEmail } from '@/app/lib/email';
+import { sendStatusEmail, sendAdminEventEmail } from '@/app/lib/email';
 
 const getStripe = () => {
   const secretKey = process.env.STRIPE_SECRET_KEY;
@@ -56,21 +56,32 @@ export async function POST(req: Request) {
       // Hent fix-tittel og kundens e-post for å sende statusvarsel
       const { data: fix } = await supabase
         .from('fix_requests')
-        .select('title, user_id')
+        .select('title, user_id, price')
         .eq('id', requestId)
         .single();
 
       if (fix) {
         const { data: profile } = await supabase.auth.admin.getUserById(fix.user_id);
-        const email = profile?.user?.email;
-        if (email) {
+        const customerEmail = profile?.user?.email;
+
+        // E-post til kunde: bekreft betaling + be om tilgang
+        if (customerEmail) {
           await sendStatusEmail({
-            to: email,
+            to: customerEmail,
             fixTitle: fix.title,
             fixId: requestId,
             status: 'in_progress',
           }).catch(() => null);
         }
+
+        // E-post til admin: betaling mottatt, jobb klar
+        await sendAdminEventEmail({
+          event: 'payment_authorized',
+          fixTitle: fix.title,
+          fixId: requestId,
+          customerEmail: customerEmail ?? undefined,
+          price: fix.price ?? undefined,
+        }).catch(() => null);
       }
     }
   }

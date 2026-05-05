@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/auth-helpers-nextjs';
-import { sendAdminNotificationEmail } from '@/app/lib/email';
+import { sendAdminNotificationEmail, sendStatusEmail } from '@/app/lib/email';
 
 export async function POST(req: Request) {
   const cookieStore = await cookies();
@@ -44,7 +44,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: error.message }, { status: 400 });
   }
 
-  // Varsle admin om ny forespørsel (brannmur: kast feil stille)
+  // Varsle admin om ny forespørsel
   await sendAdminNotificationEmail({
     fixTitle: title,
     fixId: newFix.id,
@@ -52,6 +52,16 @@ export async function POST(req: Request) {
     packageName,
     category,
   }).catch(() => null);
+
+  // Bekreftelse til kunde
+  if (user.email) {
+    await sendStatusEmail({
+      to: user.email,
+      fixTitle: title,
+      fixId: newFix.id,
+      status: 'new_request',
+    }).catch(() => null);
+  }
 
   return NextResponse.json({ success: true, id: newFix.id });
 }

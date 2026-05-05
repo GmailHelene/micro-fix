@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { createServerSupabase } from '../../lib/supabaseServer';
+import { createServiceSupabase } from '../../lib/supabaseServer';
 import { statusLabels, statusColors } from '../../lib/fixOptions';
 
 const filterOptions = [
@@ -18,7 +18,7 @@ export default async function AdminDashboardPage({
 }: {
   searchParams: Promise<{ filter?: string; q?: string; sort?: string }>;
 }) {
-  const supabase = await createServerSupabase();
+  const supabase = await createServiceSupabase();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user || user.email !== process.env.NEXT_PUBLIC_ADMIN_EMAIL) redirect('/login');
 
@@ -151,8 +151,28 @@ export default async function AdminDashboardPage({
           )}
           {displayed.map(fix => {
             const sc = statusColors[fix.status] ?? statusColors.pending_approval;
+
+            // Bestem om kortet trenger fremhevet styling
+            const isReadyToStart = fix.status === 'in_progress' && fix.access_info;
+            const isWaitingAccess = fix.status === 'in_progress' && !fix.access_info;
+            const isOfferPending = fix.status === 'awaiting_offer_approval';
+
             return (
-              <div key={fix.id} className="rounded-3xl bg-white border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow">
+              <div key={fix.id} className={`rounded-3xl bg-white p-5 shadow-sm hover:shadow-md transition-shadow border ${
+                isReadyToStart ? 'border-emerald-300 ring-2 ring-emerald-100' :
+                isOfferPending ? 'border-purple-200' :
+                'border-slate-200'
+              }`}>
+                {isReadyToStart && (
+                  <div className="rounded-xl bg-emerald-50 border border-emerald-200 px-3 py-2 text-xs text-emerald-800 font-semibold mb-3">
+                    🚀 Klar til start — kunden har delt tilgang!
+                  </div>
+                )}
+                {isWaitingAccess && (
+                  <div className="rounded-xl bg-amber-50 border border-amber-200 px-3 py-2 text-xs text-amber-700 mb-3">
+                    ⏳ Venter på tilgang fra kunde
+                  </div>
+                )}
                 <div className="flex items-start justify-between gap-4 flex-wrap">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
@@ -162,7 +182,13 @@ export default async function AdminDashboardPage({
                         {statusLabels[fix.status] ?? fix.status}
                       </span>
                       {fix.payment_status === 'paid' && (
-                        <span className="text-xs bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full font-semibold">Betalt</span>
+                        <span className="text-xs bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full font-semibold">✓ Betalt</span>
+                      )}
+                      {fix.payment_status === 'authorized' && (
+                        <span className="text-xs bg-blue-50 text-blue-700 px-2.5 py-1 rounded-full font-semibold">💳 Reservert</span>
+                      )}
+                      {fix.payment_status === 'capture_failed' && (
+                        <span className="text-xs bg-red-50 text-red-700 px-2.5 py-1 rounded-full font-semibold">⚠️ Capture feilet</span>
                       )}
                       {fix.access_info && (
                         <span className="text-xs bg-amber-50 text-amber-700 px-2.5 py-1 rounded-full font-semibold">🔑 Tilgang delt</span>
@@ -177,9 +203,13 @@ export default async function AdminDashboardPage({
                   </div>
                   <Link
                     href={`/admin/fix/${fix.id}`}
-                    className="shrink-0 rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-700 transition-colors"
+                    className={`shrink-0 rounded-full px-4 py-2 text-xs font-semibold transition-colors ${
+                      isReadyToStart
+                        ? 'bg-emerald-600 text-white hover:bg-emerald-700'
+                        : 'bg-slate-900 text-white hover:bg-slate-700'
+                    }`}
                   >
-                    Behandle →
+                    {isReadyToStart ? 'Start jobb →' : 'Behandle →'}
                   </Link>
                 </div>
               </div>

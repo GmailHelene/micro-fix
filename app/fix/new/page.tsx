@@ -252,11 +252,15 @@ export default function NewFixPage() {
                   {isOtherCategory && <span className="text-xs font-normal text-slate-500 ml-1">(valgfritt)</span>}
                 </label>
                 <input
-                  type="url"
+                  type="text"
                   className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-slate-300"
-                  placeholder="https://din-nettside.no/side-med-feil"
+                  placeholder="din-nettside.no eller https://din-nettside.no/side-med-feil"
                   value={pageUrl}
                   onChange={e => setPageUrl(e.target.value)}
+                  onBlur={e => {
+                    const v = e.target.value.trim();
+                    if (v && !/^https?:\/\//i.test(v)) setPageUrl('https://' + v);
+                  }}
                   required={!isOtherCategory}
                 />
               </div>
@@ -267,11 +271,15 @@ export default function NewFixPage() {
                   <span className="text-xs font-normal text-slate-500 ml-2">Valgfritt — lim inn lenke (Imgur, Google Drive, Dropbox o.l.)</span>
                 </label>
                 <input
-                  type="url"
+                  type="text"
                   className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-slate-300"
-                  placeholder="https://imgur.com/ditt-skjermbilde"
+                  placeholder="imgur.com/ditt-skjermbilde eller full https://-lenke"
                   value={screenshotUrl}
                   onChange={e => setScreenshotUrl(e.target.value)}
+                  onBlur={e => {
+                    const v = e.target.value.trim();
+                    if (v && !/^https?:\/\//i.test(v)) setScreenshotUrl('https://' + v);
+                  }}
                 />
                 <p className="text-xs text-slate-400 mt-1">Tips: Ta skjermbilde → last opp på imgur.com (gratis) → lim inn lenken</p>
               </div>

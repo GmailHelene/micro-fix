@@ -59,7 +59,89 @@ export async function sendAdminNotificationEmail({
   }).catch(() => null);
 }
 
+// ── Admin-varsling ved hendelser i flyten ─────────────────────────────────
+type AdminEventType = 'offer_accepted' | 'payment_authorized' | 'access_info_shared';
+
+const adminEventMessages: Record<AdminEventType, {
+  subject: string; heading: string; body: string; cta: string; color: string;
+}> = {
+  offer_accepted: {
+    subject: '🤝 Kunde godtok tilbudet — klar for betaling',
+    heading: '🤝 Tilbudet ble godtatt!',
+    body: 'Kunden har godtatt ditt custom tilbud og kan nå betale direkte via systemet. Du trenger ikke gjøre noe — betalingen kjøres automatisk med den tilpassede prisen du satte.',
+    cta: 'Gå til forespørselen →',
+    color: '#7c3aed',
+  },
+  payment_authorized: {
+    subject: '💳 Betaling reservert — jobb kan starte',
+    heading: '💳 Betaling reservert!',
+    body: 'Kunden har reservert betalingen via Stripe. Pengene trekkes automatisk når du markerer jobben som fullført. Sjekk om kunden har delt tilgangsinformasjon — hvis ikke, vent til de gjør det.',
+    cta: 'Start jobben →',
+    color: '#2563eb',
+  },
+  access_info_shared: {
+    subject: '🔑 Tilgang delt — jobb kan starte nå',
+    heading: '🔑 Kunden har delt tilgang!',
+    body: 'Kunden har delt tilgangsinformasjon (WP-admin, FTP e.l.). Alt er klart — du kan starte jobben nå.',
+    cta: 'Se tilgang og start jobben →',
+    color: '#059669',
+  },
+};
+
+export async function sendAdminEventEmail({
+  event,
+  fixTitle,
+  fixId,
+  customerEmail,
+  price,
+}: {
+  event: AdminEventType;
+  fixTitle: string;
+  fixId: string;
+  customerEmail?: string;
+  price?: number;
+}) {
+  const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+  if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS || !adminEmail) return;
+
+  const msg = adminEventMessages[event];
+  const transporter = createTransporter();
+  const base = process.env.NEXT_PUBLIC_BASE_URL || 'https://codemedic.no';
+  const from = process.env.EMAIL_FROM ?? process.env.SMTP_USER;
+
+  const extraHtml = price
+    ? `<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px 16px;margin:12px 0;font-size:14px">
+        <span style="color:#64748b">Beløp:</span> <strong>${price} kr</strong>
+       </div>`
+    : '';
+
+  await transporter.sendMail({
+    from: `CodeMedic <${from}>`,
+    to: adminEmail,
+    subject: `${msg.subject} — ${fixTitle}`,
+    html: `
+      <div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:32px 16px;color:#0f172a">
+        <p style="font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:#94a3b8;margin-bottom:8px">CodeMedic — Admin</p>
+        <h1 style="font-size:22px;font-weight:700;margin:0 0 8px;color:${msg.color}">${msg.heading}</h1>
+        <p style="font-size:14px;color:#475569;margin:0 0 4px">Oppdrag: <strong>${fixTitle}</strong></p>
+        ${customerEmail ? `<p style="font-size:14px;color:#94a3b8;margin:0 0 4px">Kunde: ${customerEmail}</p>` : ''}
+        <p style="font-size:14px;color:#94a3b8;margin:0 0 20px">Saksnr. #${fixId.slice(0, 8).toUpperCase()}</p>
+        <p style="font-size:15px;color:#334155;line-height:1.6">${msg.body}</p>
+        ${extraHtml}
+        <a href="${base}/admin/fix/${fixId}" style="display:inline-block;margin-top:20px;background:${msg.color};color:#fff;text-decoration:none;padding:12px 24px;border-radius:9999px;font-size:14px;font-weight:600">${msg.cta}</a>
+        <hr style="border:none;border-top:1px solid #e2e8f0;margin:32px 0"/>
+        <p style="font-size:12px;color:#94a3b8">CodeMedic — Admin-varsling</p>
+      </div>
+    `,
+  }).catch(() => null);
+}
+
 const statusMessages: Record<string, { subject: string; heading: string; body: string }> = {
+  new_request: {
+    subject: '📬 Vi har mottatt forespørselen din',
+    heading: 'Forespørsel mottatt!',
+    body: 'Takk for at du valgte CodeMedic! Vi har mottatt forespørselen din og starter gjennomgangen nå. Du vil høre fra oss innen 24 timer med en bekreftelse og neste steg.',
+  },
   awaiting_payment: {
     subject: '✅ Forespørselen din er godkjent — klar for betaling',
     heading: 'Jobben er godkjent!',
@@ -76,9 +158,9 @@ const statusMessages: Record<string, { subject: string; heading: string; body: s
     body: 'Vi trenger noen justeringer før vi kan starte. Logg inn for å se hva vi trenger og svar via meldingsfeltet.',
   },
   in_progress: {
-    subject: '🔧 Arbeidet er i gang!',
-    heading: 'Vi jobber med saken din',
-    body: 'Betalingen er mottatt og vi har startet på jobben. Du vil høre fra oss så snart den er fullført.',
+    subject: '🔧 Betaling bekreftet — del tilgang for å starte',
+    heading: 'Betaling reservert!',
+    body: 'Betalingen er reservert og vi er klare til å starte. <strong>For at vi skal komme i gang trenger vi tilgang til WordPress-siden din.</strong> Logg inn, gå til oppdraget og legg inn tilgangsinformasjon (WP Application Password, midlertidig admin-bruker eller FTP). Vi starter så snart vi har tilgang.',
   },
   completed: {
     subject: '🎉 Jobben er fullført!',
