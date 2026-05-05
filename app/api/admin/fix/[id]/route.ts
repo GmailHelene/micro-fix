@@ -54,7 +54,7 @@ export async function PUT(
     const secretKey = process.env.STRIPE_SECRET_KEY;
     if (secretKey) {
       const stripe = new Stripe(secretKey, {
-        apiVersion: '2024-06-20',
+        apiVersion: '2026-04-22.dahlia',
       });
       try {
         await stripe.paymentIntents.capture(fixBefore.payment_intent_id);
@@ -147,7 +147,7 @@ export async function POST(
   if (!secretKey) return NextResponse.json({ error: 'Stripe ikke konfigurert' }, { status: 500 });
 
   const stripe = new Stripe(secretKey, {
-    apiVersion: '2024-06-20',
+    apiVersion: '2026-04-22.dahlia',
     httpClient: Stripe.createNodeHttpClient(),
   });
   const origin = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
