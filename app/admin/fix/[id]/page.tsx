@@ -436,45 +436,26 @@ export default function AdminFixDetailPage() {
               </div>
             </div>
 
-            {/* Stripe-betalingslenke */}
+            {/* Betaling */}
             {fix.status === 'awaiting_payment' && (
               <div className="rounded-3xl bg-blue-50 border border-blue-200 p-5 space-y-4">
-                <h3 className="text-sm font-semibold text-blue-900">Betalingslenke til kunde</h3>
+                <h3 className="text-sm font-semibold text-blue-900">Betaling</h3>
 
-                {/* Standard pakke — generer fra Stripe Products */}
+                {/* Standard — kunden betaler selv */}
+                {!fix.custom_payment_url && (
+                  <div className="rounded-xl bg-white border border-blue-100 px-4 py-3">
+                    <p className="text-xs font-semibold text-emerald-700 mb-1">✅ Ingen handling kreves</p>
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      Kunden har fått e-post med lenke til sin side. Der har de en <strong>«Betal»</strong>-knapp som genererer Stripe-checkout automatisk. Status oppdateres automatisk via webhook etter betaling.
+                    </p>
+                  </div>
+                )}
+
+                {/* Custom betalingslenke (valgfritt — for tilpassede priser) */}
                 <div>
-                  <p className="text-xs text-blue-700 mb-2 font-medium">Standard pakke (fra Stripe Products)</p>
-                  {!stripeUrl ? (
-                    <button
-                      onClick={generateStripeUrl}
-                      disabled={working}
-                      className="w-full rounded-full bg-blue-600 text-white py-2.5 text-sm font-semibold hover:bg-blue-700 disabled:opacity-40 transition-colors"
-                    >
-                      {working ? 'Genererer...' : 'Generer Stripe-lenke'}
-                    </button>
-                  ) : (
-                    <div className="space-y-2">
-                      <div className="rounded-xl bg-white border border-blue-200 px-3 py-2 text-xs font-mono text-blue-800 break-all">
-                        {stripeUrl.slice(0, 60)}...
-                      </div>
-                      <button
-                        onClick={copyStripeUrl}
-                        className={`w-full rounded-full py-2.5 text-sm font-semibold transition-colors ${
-                          copySuccess ? 'bg-emerald-600 text-white' : 'bg-blue-600 text-white hover:bg-blue-700'
-                        }`}
-                      >
-                        {copySuccess ? '✓ Kopiert!' : 'Kopier lenke'}
-                      </button>
-                      <button onClick={generateStripeUrl} className="w-full rounded-full border border-blue-200 py-2 text-xs text-blue-700 hover:bg-blue-100 transition-colors">
-                        Generer ny lenke
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {/* Custom tilbud — lim inn Stripe payment link */}
-                <div className="border-t border-blue-200 pt-4">
-                  <p className="text-xs text-blue-700 mb-2 font-medium">Custom tilbud (lim inn Stripe payment link)</p>
+                  <p className="text-xs text-blue-700 mb-2 font-medium">
+                    Custom Stripe-lenke <span className="font-normal text-blue-500">(kun nødvendig ved manuell prissetting utenfor systemet)</span>
+                  </p>
                   <div className="flex gap-2">
                     <input
                       value={customPaymentInput}
@@ -504,10 +485,10 @@ export default function AdminFixDetailPage() {
                   {fix.custom_payment_url && (
                     <div className="mt-2 space-y-1.5">
                       <p className="text-xs text-emerald-600">✓ Custom lenke er satt — kunden bruker denne ved betaling</p>
-                      {fix.payment_status !== 'paid' && (
+                      {fix.payment_status !== 'paid' && fix.payment_status !== 'authorized' && (
                         <div className="rounded-xl bg-amber-50 border border-amber-200 px-3 py-2.5 text-xs text-amber-800">
                           <p className="font-semibold mb-1">⚠️ Manuell bekreftelse kreves</p>
-                          <p className="mb-2">Custom Stripe-lenker oppdaterer ikke status automatisk. Når du har bekreftet betaling i Stripe-dashboardet, klikk under:</p>
+                          <p className="mb-2">Custom Stripe-lenker oppdaterer ikke status automatisk. Bekreft betaling etter du har sjekket Stripe-dashboardet:</p>
                           <button
                             disabled={working}
                             onClick={async () => {
@@ -516,7 +497,7 @@ export default function AdminFixDetailPage() {
                               const res = await fetch(`/api/admin/fix/${id}`, {
                                 method: 'PUT',
                                 headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ payment_status: 'paid', status: 'in_progress' }),
+                                body: JSON.stringify({ payment_status: 'authorized', status: 'in_progress' }),
                               });
                               const data = await res.json();
                               if (!data.error) { fetchFix(); showToast('Betaling bekreftet — status satt til Under arbeid'); }

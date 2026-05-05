@@ -160,7 +160,8 @@ export async function POST(
   const origin = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 
   const session = await stripe.checkout.sessions.create({
-    payment_method_types: ['card', 'klarna'],
+    payment_method_types: ['card'], // klarna støtter ikke manual capture
+
     mode: 'payment',
     // Reserver kortet — trekkes kun ved fullføring
     payment_intent_data: {

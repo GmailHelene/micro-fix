@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
   const priceId = getPriceId(fix.package_name ?? '');
 
   const session = await stripe.checkout.sessions.create({
-    payment_method_types: ['card', 'klarna'],
+    payment_method_types: ['card'], // klarna støtter ikke manual capture
     mode: 'payment',
     customer_email: user.email || undefined,
     // Reserver kortet — trekkes kun når jobben er fullført (capture_method: manual)
