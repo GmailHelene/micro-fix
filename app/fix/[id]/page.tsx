@@ -120,6 +120,15 @@ function FixDetailContent() {
     }
   }, [fetchFix, fetchMessages, searchParams]);
 
+  // Auto-refresh hvert 30. sekund så kunden ser oppdatert status uten å laste siden
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchFix();
+      fetchMessages();
+    }, 30_000);
+    return () => clearInterval(interval);
+  }, [fetchFix, fetchMessages]);
+
   const handlePay = async () => {
     if (!fix) return;
     setPaying(true);
@@ -213,9 +222,17 @@ function FixDetailContent() {
       )}
 
       <div className="max-w-3xl mx-auto px-4 py-12">
-        <button onClick={() => router.push('/dashboard')} className="text-sm text-slate-500 hover:text-slate-800 mb-8 inline-flex items-center gap-1">
-          ← Mine forespørsler
-        </button>
+        <div className="flex items-center justify-between mb-8">
+          <button onClick={() => router.push('/dashboard')} className="text-sm text-slate-500 hover:text-slate-800 inline-flex items-center gap-1">
+            ← Mine forespørsler
+          </button>
+          <button
+            onClick={() => { fetchFix(); fetchMessages(); showToast('Oppdatert!'); }}
+            className="text-xs text-slate-400 hover:text-slate-600 flex items-center gap-1 transition-colors"
+          >
+            ↻ Oppdater
+          </button>
+        </div>
 
         {/* Betalingsbanner */}
         {needsPayment && (

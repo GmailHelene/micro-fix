@@ -414,6 +414,25 @@ export default function AdminFixDetailPage() {
                 <div className={`rounded-xl border px-3 py-2 text-xs font-medium text-center ${statusColors[fix.status]?.bg ?? 'bg-slate-50'} ${statusColors[fix.status]?.text ?? 'text-slate-600'} border-current border-opacity-20`}>
                   Nå: {statusLabels[fix.status] ?? fix.status}
                 </div>
+
+                {/* Resend status-e-post */}
+                <div className="border-t border-slate-100 pt-3 mt-1">
+                  <button
+                    disabled={working}
+                    onClick={async () => {
+                      setWorking(true);
+                      const res = await fetch(`/api/admin/fix/${id}`, { method: 'PATCH' });
+                      const data = await res.json();
+                      if (data.success) showToast(`E-post sendt på nytt til ${data.sentTo}`);
+                      else showToast(data.error || 'Feil ved sending', 'err');
+                      setWorking(false);
+                    }}
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 text-slate-600 px-4 py-2 text-xs font-medium hover:bg-slate-100 disabled:opacity-40 transition-colors"
+                  >
+                    📧 Send status-e-post til kunde på nytt
+                  </button>
+                  <p className="text-[10px] text-slate-400 text-center mt-1">Sender e-post for nåværende status</p>
+                </div>
               </div>
             </div>
 

@@ -100,6 +100,40 @@ export async function PUT(
   return NextResponse.json({ success: true });
 }
 
+// PATCH /api/admin/fix/[id] — resend status-e-post til kunde
+export async function PATCH(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  const supabase = await createSupabase();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user || !isAdmin(user.email)) return NextResponse.json({ error: 'Ingen tilgang' }, { status: 403 });
+
+  const { data: fix } = await supabase
+    .from('fix_requests')
+    .select('title, user_id, status, price, admin_note')
+    .eq('id', id)
+    .single();
+
+  if (!fix) return NextResponse.json({ error: 'Forespørsel ikke funnet' }, { status: 404 });
+
+  const { data: profile } = await supabase.auth.admin.getUserById(fix.user_id);
+  const email = profile?.user?.email;
+  if (!email) return NextResponse.json({ error: 'Kunde-e-post ikke funnet' }, { status: 400 });
+
+  await sendStatusEmail({
+    to: email,
+    fixTitle: fix.title,
+    fixId: id,
+    status: fix.status,
+    adminNote: fix.admin_note ?? undefined,
+    price: fix.status === 'awaiting_offer_approval' ? fix.price ?? undefined : undefined,
+  });
+
+  return NextResponse.json({ success: true, sentTo: email });
+}
+
 // POST /api/admin/fix/[id] — generer Stripe checkout-URL
 export async function POST(
   _req: NextRequest,
