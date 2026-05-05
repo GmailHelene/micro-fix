@@ -1,0 +1,91 @@
+# Micro-Fix – Project Context
+
+## 1. Prosjektbeskrivelse
+Micro-Fix er en SaaS-tjeneste som tilbyr raske, presise og profesjonelle fikser for WordPress, WooCommerce, Shopify og generelle webproblemer. Plattformen skal gjøre det enkelt for kunder å sende inn et problem, få det diagnostisert og løst raskt, med høy kvalitet og minimal friksjon.
+
+## 2. Målgruppe
+- Små og mellomstore bedrifter
+- Nettbutikker (WooCommerce, Shopify)
+- Bloggere og innholdsprodusenter
+- Bedrifter uten intern utvikler
+- Privatpersoner med tekniske problemer
+- Webdesignere som trenger raske fixes
+
+## 3. Teknologier
+- Next.js (App Router)
+- TypeScript
+- Tailwind CSS
+- Supabase (database + auth)
+- Stripe (betaling)
+- Node.js API-ruter
+- GitHub (repo)
+- Claude Code (AI-first utvikling)
+
+## 4. Filstruktur (forventet)
+- `/app` – Next.js routes
+- `/app/api` – API-endepunkter
+- `/components` – UI-komponenter
+- `/lib` – hjelpefunksjoner
+- `/styles` – globale styles
+- `/supabase` – database og klient
+- `/types` – TypeScript-typer
+- `/docs` – dokumentasjon
+
+## 5. API-endepunkter
+- `POST /api/fix/create`
+- `GET /api/fix/[id]`
+- `POST /api/fix/update`
+- `POST /api/auth/login`
+- `POST /api/auth/register`
+- `POST /api/stripe/session`
+- `POST /api/stripe/webhook`
+
+## 6. Database-schema (Supabase)
+### Tabell: users
+- id (uuid)
+- email
+- name
+- created_at
+
+### Tabell: fixes
+- id (uuid)
+- user_id (fk)
+- title
+- description
+- status (pending, in_progress, done)
+- created_at
+- updated_at
+
+### Tabell: payments
+- id
+- fix_id (fk)
+- stripe_session_id
+- amount
+- status
+
+## 7. Designregler
+- Tailwind for all styling
+- Ingen inline-styling
+- Minimalistisk, Apple-inspirert UI
+- Fokus på klarhet, enkelhet og premium-følelse
+- Gjenbrukbare komponenter
+
+## 8. Navngivningskonvensjoner
+- camelCase for variabler og funksjoner
+- PascalCase for komponenter
+- snake_case for databasefelt
+- Filnavn matcher komponentnavn
+
+## 9. Viktige prinsipper
+- Alt skal være typed (TypeScript)
+- Ingen duplisert logikk
+- Minimal API-overflate
+- Sikkerhet først (validering, sanitizing)
+- Rask respons og lav kompleksitet
+- AI-first utvikling (Claude Code)
+
+## 10. Andre viktige punkter
+- Prosjektet skal være lett å utvide
+- Fokus på raske leveranser
+- Kode skal være lett å lese og forstå
+- Claude skal alltid forklare plan før endringer

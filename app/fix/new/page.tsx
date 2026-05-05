@@ -1,35 +1,69 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { supabase } from '@/app/lib/supabaseClient';
 import { categories, packages } from '@/app/lib/fixOptions';
 
+const criticalities = [
+  { value: 'low',    label: 'Lav — kan vente',             color: 'text-slate-600' },
+  { value: 'medium', label: 'Medium — bør løses snart',    color: 'text-amber-600' },
+  { value: 'high',   label: 'Høy — påvirker brukere',      color: 'text-orange-600' },
+  { value: 'urgent', label: 'Kritisk — stopper drift',     color: 'text-red-600' },
+];
+
 export default function NewFixPage() {
-  const [summary, setSummary] = useState('');
+  const router = useRouter();
+  const [authChecked, setAuthChecked] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [fixId, setFixId] = useState<string | null>(null);
+
+  const [summary, setSummary]       = useState('');
   const [description, setDescription] = useState('');
-  const [pageUrl, setPageUrl] = useState('');
+  const [pageUrl, setPageUrl]       = useState('');
   const [screenshotUrl, setScreenshotUrl] = useState('');
   const [triedBefore, setTriedBefore] = useState('');
   const [criticality, setCriticality] = useState('medium');
-  const [category, setCategory] = useState(categories[0].id);
-  const [packageId, setPackageId] = useState(packages[0].id);
-  const [accessInfo, setAccessInfo] = useState('');
-  const [message, setMessage] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [category, setCategory]     = useState(categories[0].id);
+  const [packageId, setPackageId]   = useState(packages[0].id);
+  const [loading, setLoading]       = useState(false);
+  const [error, setError]           = useState<string | null>(null);
 
-  const selectedPackage = packages.find(pkg => pkg.id === packageId) ?? packages[0];
+  // Auth-guard
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      if (!data.user) {
+        router.replace('/login?redirect=/fix/new');
+      } else {
+        setAuthChecked(true);
+      }
+    });
+  }, [router]);
+
+  const selectedPackage = packages.find(p => p.id === packageId) ?? packages[0];
+  const selectedCategory = categories.find(c => c.id === category) ?? categories[0];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setMessage('');
+    setError(null);
     setLoading(true);
 
-    const detailedDescription = `URL: ${pageUrl}\nSkjermbilde: ${screenshotUrl}\nKritikalitet: ${criticality}\nHva jeg har prøvd: ${triedBefore || 'Ingen'}\nTilgang: ${accessInfo || 'Ikke delt ennå'}\n\nDetaljert problem:\n${description}`;
+    const fullDescription = [
+      `URL: ${pageUrl}`,
+      `Skjermbilde: ${screenshotUrl}`,
+      `Kritikalitet: ${criticalities.find(c => c.value === criticality)?.label ?? criticality}`,
+      `Hva er prøvd: ${triedBefore || 'Ikke oppgitt'}`,
+      ``,
+      `Problembeskrivelse:`,
+      description,
+    ].join('\n');
 
     const res = await fetch('/api/fix/new', {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         title: summary,
-        description: detailedDescription,
+        description: fullDescription,
         category,
         packageName: selectedPackage.name,
         price: selectedPackage.price,
@@ -41,175 +75,285 @@ export default function NewFixPage() {
     setLoading(false);
 
     if (data.error) {
-      setMessage(data.error);
+      setError(data.error);
       return;
     }
 
-    setMessage('Forespørselen er sendt og venter på godkjenning. Takk for at du gir tydelig informasjon.');
-    setSummary('');
-    setDescription('');
-    setPageUrl('');
-    setScreenshotUrl('');
-    setTriedBefore('');
-    setAccessInfo('');
-    setCriticality('medium');
-    setCategory(categories[0].id);
-    setPackageId(packages[0].id);
+    setFixId(data.id ?? null);
+    setSubmitted(true);
   };
 
-  return (
-    <div className="max-w-5xl mx-auto mt-10 space-y-10 px-4">
-      <div className="rounded-3xl bg-white p-8 shadow-sm border border-slate-200">
-        <h1 className="text-3xl font-semibold text-slate-900">Ny forespørsel</h1>
-        <p className="mt-3 text-slate-600">Fyll ut problemet tydelig, legg ved skjermbilde og beskriv hva som er viktig. Dette sparer tid og gjør jobben enklere å starte.</p>
+  if (!authChecked) {
+    return <div className="min-h-screen bg-slate-50 flex items-center justify-center text-slate-400 text-sm">Sjekker innlogging...</div>;
+  }
+
+  // Bekreftelsesskjerm
+  if (submitted) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
+        <div className="max-w-lg w-full text-center">
+          <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <span className="text-3xl">✓</span>
+          </div>
+          <h1 className="text-2xl font-bold text-slate-900 mb-3">Forespørsel mottatt!</h1>
+          <p className="text-slate-600 mb-2">
+            Takk for at du valgte Micro-fix. Forespørselen din er sendt inn og vil bli gjennomgått innen kort tid.
+          </p>
+          <div className="rounded-2xl bg-white border border-slate-200 p-6 mt-6 text-left shadow-sm">
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4">Hva skjer nå?</p>
+            <ol className="space-y-3 text-sm text-slate-700">
+              <li className="flex gap-3">
+                <span className="w-6 h-6 rounded-full bg-slate-900 text-white flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">1</span>
+                <span>Jeg gjennomgår forespørselen og sender deg en bekreftelse innen 24 timer.</span>
+              </li>
+              <li className="flex gap-3">
+                <span className="w-6 h-6 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">2</span>
+                <span>Når jobben er godkjent, får du beskjed om betaling. Du betaler <strong>kun</strong> når du er klar.</span>
+              </li>
+              <li className="flex gap-3">
+                <span className="w-6 h-6 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">3</span>
+                <span>Etter betaling starter arbeidet umiddelbart. Levering innen {selectedPackage.estimatedTime}.</span>
+              </li>
+            </ol>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3 mt-6 justify-center">
+            <button
+              onClick={() => router.push('/dashboard')}
+              className="rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white hover:bg-slate-800 transition-colors"
+            >
+              Se mine forespørsler
+            </button>
+            {fixId && (
+              <button
+                onClick={() => router.push(`/fix/${fixId}`)}
+                className="rounded-full border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+              >
+                Åpne forespørselen
+              </button>
+            )}
+          </div>
+        </div>
       </div>
+    );
+  }
 
-      <div className="grid gap-8 lg:grid-cols-[2fr_1fr]">
-        <div className="rounded-3xl bg-white p-8 shadow-sm border border-slate-200">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-slate-700">Hva er problemet?</label>
-              <input
-                className="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 text-slate-900"
-                placeholder="Kort, konkret tittel på problemet"
-                value={summary}
-                onChange={e => setSummary(e.target.value)}
-                required
-              />
-            </div>
+  return (
+    <div className="min-h-screen bg-slate-50">
+      <div className="max-w-5xl mx-auto px-4 py-12">
 
-            <div>
-              <label className="block text-sm font-medium text-slate-700">URL til siden</label>
-              <input
-                type="url"
-                className="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 text-slate-900"
-                placeholder="https://din-nettside.no"
-                value={pageUrl}
-                onChange={e => setPageUrl(e.target.value)}
-                required
-              />
-            </div>
+        <div className="mb-8">
+          <p className="text-xs text-slate-500 uppercase tracking-widest mb-1">Ny forespørsel</p>
+          <h1 className="text-3xl font-semibold text-slate-900">Beskriv problemet</h1>
+          <p className="mt-2 text-slate-500 text-sm">Jo tydeligere du beskriver, desto raskere kan jeg starte. Du betaler først når jobben er godkjent.</p>
+        </div>
 
-            <div>
-              <label className="block text-sm font-medium text-slate-700">Skjermbilde</label>
-              <input
-                type="url"
-                className="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 text-slate-900"
-                placeholder="Link til skjermbilde (Imgur, Drive eller lignende)"
-                value={screenshotUrl}
-                onChange={e => setScreenshotUrl(e.target.value)}
-                required
-              />
-            </div>
+        <div className="grid gap-8 lg:grid-cols-[2fr_1fr]">
+          {/* Skjema */}
+          <form onSubmit={handleSubmit} className="space-y-5">
 
-            <div>
-              <label className="block text-sm font-medium text-slate-700">Hva har du prøvd selv?</label>
-              <textarea
-                className="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 text-slate-900"
-                placeholder="Skriv kort hva du har forsøkt før du kontakter meg."
-                value={triedBefore}
-                onChange={e => setTriedBefore(e.target.value)}
-                rows={4}
-              />
-            </div>
-
-            <div className="grid gap-6 lg:grid-cols-2">
-              <div>
-                <label className="block text-sm font-medium text-slate-700">Hvor kritisk er feilen?</label>
-                <select
-                  value={criticality}
-                  onChange={e => setCriticality(e.target.value)}
-                  className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900"
-                >
-                  <option value="low">Lav - kan vente</option>
-                  <option value="medium">Medium - bør løses snart</option>
-                  <option value="high">Høy - påvirker brukere</option>
-                  <option value="urgent">Urgent - stopper drift</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700">Hvilken pakke ønsker du?</label>
-                <select
-                  value={packageId}
-                  onChange={e => setPackageId(e.target.value)}
-                  className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900"
-                >
-                  {packages.map(pkg => (
-                    <option key={pkg.id} value={pkg.id}>
-                      {pkg.name} — {pkg.price} kr
-                    </option>
-                  ))}
-                </select>
+            {/* Kategori */}
+            <div className="rounded-3xl bg-white border border-slate-200 p-6 shadow-sm">
+              <label className="block text-sm font-semibold text-slate-800 mb-3">Hva handler det om?</label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {categories.map(cat => (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => setCategory(cat.id)}
+                    className={`rounded-xl border p-3 text-left transition-all ${
+                      category === cat.id
+                        ? 'border-slate-900 bg-slate-900 text-white'
+                        : 'border-slate-200 bg-white text-slate-700 hover:border-slate-400'
+                    }`}
+                  >
+                    <div className="text-lg mb-1">{cat.icon}</div>
+                    <div className="text-xs font-semibold leading-tight">{cat.name}</div>
+                  </button>
+                ))}
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-slate-700">Tilgangsinformasjon</label>
-              <textarea
-                className="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 text-slate-900"
-                placeholder="Skriv om du har WP-admin, FTP eller andre tilgangsdetaljer som kan deles senere."
-                value={accessInfo}
-                onChange={e => setAccessInfo(e.target.value)}
-                rows={4}
-              />
+            {/* Pakkevalg */}
+            <div className="rounded-3xl bg-white border border-slate-200 p-6 shadow-sm">
+              <label className="block text-sm font-semibold text-slate-800 mb-3">Velg pakke</label>
+              <div className="space-y-2">
+                {packages.map(pkg => (
+                  <button
+                    key={pkg.id}
+                    type="button"
+                    onClick={() => setPackageId(pkg.id)}
+                    className={`w-full rounded-2xl border p-4 text-left transition-all ${
+                      packageId === pkg.id
+                        ? 'border-slate-900 bg-slate-900 text-white'
+                        : 'border-slate-200 bg-white text-slate-700 hover:border-slate-400'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="font-semibold text-sm">{pkg.name}</div>
+                        <div className={`text-xs mt-0.5 ${packageId === pkg.id ? 'text-slate-300' : 'text-slate-500'}`}>
+                          {pkg.estimatedTime}
+                        </div>
+                      </div>
+                      <div className={`text-xl font-bold ${packageId === pkg.id ? 'text-white' : 'text-blue-600'}`}>
+                        {pkg.price} kr
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-slate-700">Detaljert problem</label>
-              <textarea
-                className="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 text-slate-900"
-                placeholder="Beskriv problemet mer detaljert. Hva skjer, hva forventer du, og hvor oppstår det?"
-                value={description}
-                onChange={e => setDescription(e.target.value)}
-                rows={6}
-                required
-              />
+            {/* Problemdetaljer */}
+            <div className="rounded-3xl bg-white border border-slate-200 p-6 shadow-sm space-y-5">
+              <div>
+                <label className="block text-sm font-semibold text-slate-800 mb-1.5">
+                  Hva er problemet? <span className="text-red-500">*</span>
+                </label>
+                <input
+                  className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-slate-300"
+                  placeholder="Kort, konkret tittel — f.eks. 'Mobilvisning ødelagt på forsiden'"
+                  value={summary}
+                  onChange={e => setSummary(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-slate-800 mb-1.5">
+                  URL til siden <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="url"
+                  className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-slate-300"
+                  placeholder="https://din-nettside.no/side-med-feil"
+                  value={pageUrl}
+                  onChange={e => setPageUrl(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-slate-800 mb-1.5">
+                  Skjermbilde <span className="text-red-500">*</span>
+                  <span className="text-xs font-normal text-slate-500 ml-2">Lim inn lenke (Imgur, Google Drive, Dropbox o.l.)</span>
+                </label>
+                <input
+                  type="url"
+                  className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-slate-300"
+                  placeholder="https://imgur.com/ditt-skjermbilde"
+                  value={screenshotUrl}
+                  onChange={e => setScreenshotUrl(e.target.value)}
+                  required
+                />
+                <p className="text-xs text-slate-400 mt-1">Tips: Ta skjermbilde → last opp på imgur.com (gratis) → lim inn lenken</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-slate-800 mb-1.5">
+                  Beskriv problemet <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-slate-300"
+                  placeholder="Hva skjer? Hva forventer du? Når startet problemet?"
+                  value={description}
+                  onChange={e => setDescription(e.target.value)}
+                  rows={4}
+                  required
+                />
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-800 mb-1.5">Kritikalitet</label>
+                  <select
+                    value={criticality}
+                    onChange={e => setCriticality(e.target.value)}
+                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-slate-300"
+                  >
+                    {criticalities.map(c => (
+                      <option key={c.value} value={c.value}>{c.label}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-slate-800 mb-1.5">Hva har du prøvd?</label>
+                  <input
+                    className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-slate-300"
+                    placeholder="F.eks. tømt cache, deaktivert plugin..."
+                    value={triedBefore}
+                    onChange={e => setTriedBefore(e.target.value)}
+                  />
+                </div>
+              </div>
             </div>
+
+            {error && (
+              <div className="rounded-2xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+                {error}
+              </div>
+            )}
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-full bg-blue-600 px-5 py-3 text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+              className="w-full rounded-full bg-slate-900 py-4 text-sm font-bold text-white hover:bg-slate-800 disabled:opacity-50 transition-colors shadow-lg"
             >
-              {loading ? 'Sender ...' : 'Send forespørsel'}
+              {loading ? 'Sender inn...' : `Send forespørsel — ${selectedPackage.price} kr`}
             </button>
+            <p className="text-center text-xs text-slate-400">Du betaler ikke nå. Betaling skjer kun etter at jobben er godkjent.</p>
           </form>
 
-          {message && <p className="mt-4 text-slate-700">{message}</p>}
-        </div>
+          {/* Sidebar */}
+          <aside className="space-y-4 lg:sticky lg:top-20 self-start">
 
-        <aside className="space-y-6">
-          <div className="rounded-3xl bg-white p-8 shadow-sm border border-slate-200">
-            <h2 className="text-xl font-semibold text-slate-900">Valgt pakke</h2>
-            <p className="mt-3 text-slate-600">{selectedPackage.description}</p>
-            <div className="mt-6 grid gap-3 sm:grid-cols-2">
-              <div className="rounded-3xl bg-slate-50 p-4">
-                <p className="text-sm text-slate-500">Pris</p>
-                <p className="mt-2 text-2xl font-bold text-blue-600">{selectedPackage.price} kr</p>
+            {/* Valgt pakke */}
+            <div className="rounded-3xl bg-white border border-slate-200 p-5 shadow-sm">
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Valgt pakke</p>
+              <div className="flex items-baseline justify-between mb-3">
+                <span className="font-bold text-slate-900">{selectedPackage.name}</span>
+                <span className="text-2xl font-bold text-blue-600">{selectedPackage.price} kr</span>
               </div>
-              <div className="rounded-3xl bg-slate-50 p-4">
-                <p className="text-sm text-slate-500">Estimert arbeid</p>
-                <p className="mt-2 text-2xl font-bold text-slate-900">{selectedPackage.estimatedTime}</p>
+              <p className="text-sm text-slate-600 mb-3">{selectedPackage.description}</p>
+              <ul className="space-y-1.5">
+                {selectedPackage.features.map(f => (
+                  <li key={f} className="flex items-center gap-2 text-xs text-slate-600">
+                    <span className="text-emerald-500 font-bold">✓</span> {f}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Valgt kategori */}
+            <div className="rounded-3xl bg-slate-50 border border-slate-200 p-5">
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Valgt kategori</p>
+              <div className="flex items-center gap-2">
+                <span className="text-xl">{selectedCategory.icon}</span>
+                <span className="font-medium text-slate-800 text-sm">{selectedCategory.name}</span>
               </div>
             </div>
-          </div>
 
-          <div className="rounded-3xl bg-white p-8 shadow-sm border border-slate-200">
-            <h2 className="text-xl font-semibold text-slate-900">Forventninger</h2>
-            <ul className="mt-4 space-y-3 text-slate-600">
-              <li>Leveringstid: 24–48 timer etter godkjenning.</li>
-              <li>Betaling skjer først når jobben er godkjent.</li>
-              <li>Ikke inkludert: redesign, migrering eller større redesign-prosjekter.</li>
-              <li>Ekstra arbeid faktureres hvis oppgaven vokser.</li>
-              <li>Får jeg ikke tilgang: full refusjon og null stress.</li>
-            </ul>
-          </div>
+            {/* Garanti */}
+            <div className="rounded-3xl bg-blue-50 border border-blue-200 p-5">
+              <p className="text-xs font-semibold text-blue-700 uppercase tracking-wider mb-2">Micro-fix garanti</p>
+              <p className="text-sm text-slate-700">Du betaler først når jobben er godkjent og du er fornøyd. Full refusjon hvis vi ikke kan løse problemet.</p>
+            </div>
 
-          <div className="rounded-3xl bg-blue-50 p-8 shadow-sm border border-blue-200 text-blue-900">
-            <h2 className="text-xl font-semibold">Micro-fix garanti</h2>
-            <p className="mt-3 text-slate-900">Du betaler først når jobben er godkjent. Det gir deg trygghet og meg full kontroll i adminpanelet.</p>
-          </div>
-        </aside>
+            {/* Forventninger */}
+            <div className="rounded-3xl bg-white border border-slate-200 p-5 shadow-sm">
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Ikke inkludert</p>
+              <ul className="space-y-1.5 text-xs text-slate-500">
+                <li>• Redesign eller nytt nettsted</li>
+                <li>• Store migreringer eller plattformbytte</li>
+                <li>• Opplæring eller kursing</li>
+                <li>• Feil utenfor valgt kategori</li>
+              </ul>
+              <p className="text-xs text-slate-400 mt-3">Ekstra arbeid avtales og faktureres separat.</p>
+            </div>
+
+          </aside>
+        </div>
       </div>
     </div>
   );

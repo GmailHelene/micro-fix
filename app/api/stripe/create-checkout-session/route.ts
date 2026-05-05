@@ -5,34 +5,32 @@ import { createServerClient } from '@supabase/auth-helpers-nextjs';
 
 const getStripe = () => {
   const secretKey = process.env.STRIPE_SECRET_KEY;
-  if (!secretKey) {
-    throw new Error('Missing STRIPE_SECRET_KEY environment variable');
-  }
-  return new Stripe(secretKey, {
-    apiVersion: '2026-04-22.dahlia',
-  });
+  if (!secretKey) throw new Error('Missing STRIPE_SECRET_KEY');
+  return new Stripe(secretKey, { apiVersion: '2026-04-22.dahlia' });
 };
 
-const createSupabase = async (req: NextRequest) => {
+const createSupabase = async () => {
   const cookieStore = await cookies();
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { cookies: cookieStore }
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+      },
+    }
   );
 };
 
 export async function POST(req: NextRequest) {
-  const supabase = await createSupabase(req);
+  const supabase = await createSupabase();
   const { requestId } = await req.json();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user) {
-    return NextResponse.json({ error: 'Ikke innlogget' }, { status: 401 });
-  }
+  if (!user) return NextResponse.json({ error: 'Ikke innlogget' }, { status: 401 });
 
   const { data: fix, error: fetchError } = await supabase
     .from('fix_requests')
@@ -41,9 +39,7 @@ export async function POST(req: NextRequest) {
     .eq('user_id', user.id)
     .single();
 
-  if (fetchError || !fix) {
-    return NextResponse.json({ error: 'Forespørsel ikke funnet' }, { status: 404 });
-  }
+  if (fetchError || !fix) return NextResponse.json({ error: 'Forespørsel ikke funnet' }, { status: 404 });
 
   if (fix.status !== 'awaiting_payment' || fix.payment_status !== 'unpaid') {
     return NextResponse.json({ error: 'Betaling kan ikke gjennomføres nå.' }, { status: 400 });
@@ -51,6 +47,7 @@ export async function POST(req: NextRequest) {
 
   const origin = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
   const stripe = getStripe();
+
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ['card'],
     mode: 'payment',
