@@ -38,7 +38,7 @@ export default function Header() {
 
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 shrink-0">
-          <Image src="/logo.png" alt="CodeMedic" width={32} height={32} className="rounded-lg" />
+          <Image src="/logo.png" alt="CodeMedic" width={40} height={40} className="rounded-xl" />
           <span className="text-lg font-bold text-slate-900 tracking-tight">CodeMedic</span>
           <span className="hidden sm:inline text-xs text-slate-400 font-medium">Premium teknisk hjelp</span>
         </Link>

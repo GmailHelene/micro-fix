@@ -112,7 +112,7 @@ export default async function HomePage() {
               <div className="grid gap-12 lg:grid-cols-[3fr_2fr] lg:items-center">
                 <div>
                   <div className="flex items-center gap-3 mb-6">
-                    <Image src="/logo.png" alt="CodeMedic" width={48} height={48} className="rounded-2xl" />
+                    <Image src="/logo.png" alt="CodeMedic" width={68} height={68} className="rounded-2xl" />
                     <p className="text-xs uppercase tracking-[0.35em] text-slate-400 font-medium">CodeMedic</p>
                   </div>
                   <h1 className="text-4xl md:text-5xl font-bold leading-[1.1] text-slate-900 tracking-tight">
@@ -436,15 +436,25 @@ export default async function HomePage() {
         </div>
 
         {/* ── FOOTER ── */}
-        <footer className="border-t border-slate-200 mt-8 py-8">
-          <div className="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
-            <div className="flex items-center gap-2">
-              <Image src="/logo.png" alt="CodeMedic" width={24} height={24} className="rounded-lg opacity-70" />
-              <span>CodeMedic — Premium teknisk hjelp for WordPress og web</span>
+        <footer className="border-t border-slate-200 mt-8 py-10">
+          <div className="max-w-5xl mx-auto px-4 space-y-4">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
+              <div className="flex items-center gap-2.5">
+                <Image src="/logo.png" alt="CodeMedic" width={36} height={36} className="rounded-lg" />
+                <div>
+                  <span className="font-semibold text-slate-600 text-sm">CodeMedic</span>
+                  <p className="text-slate-400">Premium teknisk hjelp for WordPress og web</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-5">
+                <a href="mailto:support@codemedic.no" className="hover:text-slate-600 transition-colors">support@codemedic.no</a>
+                <Link href="/fix/new" className="hover:text-slate-600 transition-colors">Send forespørsel</Link>
+                <Link href="/login" className="hover:text-slate-600 transition-colors">Logg inn</Link>
+              </div>
             </div>
-            <div className="flex items-center gap-4">
-              <a href="mailto:support@codemedic.no" className="hover:text-slate-600 transition-colors">support@codemedic.no</a>
-              <Link href="/login" className="hover:text-slate-600 transition-colors">Logg inn</Link>
+            <div className="border-t border-slate-100 pt-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-300">
+              <span>© {new Date().getFullYear()} CodeMedic. Alle rettigheter forbeholdt.</span>
+              <span>Norsk tjeneste · Trygt via Stripe · No cure, no pay</span>
             </div>
           </div>
         </footer>

@@ -107,7 +107,7 @@ export default function NewFixPage() {
             <ol className="space-y-3 text-sm text-slate-700">
               <li className="flex gap-3">
                 <span className="w-6 h-6 rounded-full bg-slate-900 text-white flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">1</span>
-                <span>Vi gjennomgår forespørselen og sender deg en bekreftelse innen 24 timer.</span>
+                <span>Vi gjennomgår forespørselen og gir deg tilbakemelding på e-post — vanligvis samme dag.</span>
               </li>
               <li className="flex gap-3">
                 <span className="w-6 h-6 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">2</span>
