@@ -55,7 +55,6 @@ export async function PUT(
     if (secretKey) {
       const stripe = new Stripe(secretKey, {
         apiVersion: '2024-06-20',
-        httpClient: Stripe.createNodeHttpClient(),
       });
       try {
         await stripe.paymentIntents.capture(fixBefore.payment_intent_id);
