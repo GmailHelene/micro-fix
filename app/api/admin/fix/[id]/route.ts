@@ -53,7 +53,7 @@ export async function PUT(
   if (body.status === 'completed' && fixBefore?.payment_intent_id) {
     const secretKey = process.env.STRIPE_SECRET_KEY;
     if (secretKey) {
-      const stripe = new Stripe(secretKey, { apiVersion: '2026-04-22.dahlia' });
+      const stripe = new Stripe(secretKey, { apiVersion: '2024-06-20' });
       try {
         await stripe.paymentIntents.capture(fixBefore.payment_intent_id);
         updates.payment_status = 'paid';
@@ -144,7 +144,7 @@ export async function POST(
   const secretKey = process.env.STRIPE_SECRET_KEY;
   if (!secretKey) return NextResponse.json({ error: 'Stripe ikke konfigurert' }, { status: 500 });
 
-  const stripe = new Stripe(secretKey, { apiVersion: '2026-04-22.dahlia' });
+  const stripe = new Stripe(secretKey, { apiVersion: '2024-06-20' });
   const origin = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 
   try {

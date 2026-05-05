@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
   });
 
   try {
-    const stripe = new Stripe(secretKey, { apiVersion: '2026-04-22.dahlia' });
+    const stripe = new Stripe(secretKey, { apiVersion: '2024-06-20' });
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
