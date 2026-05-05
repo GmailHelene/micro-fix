@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import Stripe from 'stripe';
 import { createServiceSupabase, getSessionUser } from '@/app/lib/supabaseServer';
 
 export async function POST(req: NextRequest) {
@@ -30,52 +29,54 @@ export async function POST(req: NextRequest) {
   if (!secretKey) return NextResponse.json({ error: 'Stripe ikke konfigurert' }, { status: 500 });
 
   const origin = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-
   const unitAmount = Math.round((fix.price || 0) * 100);
-  console.log('[stripe-checkout] Creating session', {
-    fixId: fix.id,
-    title: fix.title,
-    price: fix.price,
-    unitAmount,
-    origin,
-  });
+
+  console.log('[stripe-checkout] Creating session via fetch', { fixId: fix.id, unitAmount });
 
   try {
-    const stripe = new Stripe(secretKey, {
-      apiVersion: '2024-06-20',
-      httpClient: Stripe.createNodeHttpClient(),
-    });
+    // Direkte REST-kall til Stripe — omgår SDK og Next.js fetch-patching
+    const params = new URLSearchParams();
+    params.append('mode', 'payment');
+    params.append('payment_method_types[]', 'card');
+    if (user.email) params.append('customer_email', user.email);
+    params.append('payment_intent_data[capture_method]', 'manual');
+    params.append('payment_intent_data[metadata][request_id]', fix.id);
+    params.append('payment_intent_data[metadata][user_id]', user.id);
+    params.append('line_items[0][quantity]', '1');
+    params.append('line_items[0][price_data][currency]', 'nok');
+    params.append('line_items[0][price_data][unit_amount]', String(unitAmount));
+    params.append('line_items[0][price_data][product_data][name]', fix.title);
+    params.append('line_items[0][price_data][product_data][description]', 'Betaling for CodeMedic oppdrag');
+    params.append('metadata[request_id]', fix.id);
+    params.append('metadata[user_id]', user.id);
+    params.append('success_url', `${origin}/fix/${fix.id}?payment=success`);
+    params.append('cancel_url', `${origin}/fix/${fix.id}`);
 
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      mode: 'payment',
-      customer_email: user.email || undefined,
-      payment_intent_data: {
-        capture_method: 'manual',
-        metadata: { request_id: fix.id, user_id: user.id },
+    const stripeRes = await fetch('https://api.stripe.com/v1/checkout/sessions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${secretKey}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
       },
-      line_items: [{
-        price_data: {
-          currency: 'nok',
-          product_data: {
-            name: fix.title,
-            description: 'Betaling for CodeMedic oppdrag',
-          },
-          unit_amount: unitAmount,
-        },
-        quantity: 1,
-      }],
-      metadata: { request_id: fix.id, user_id: user.id },
-      success_url: `${origin}/fix/${fix.id}?payment=success`,
-      cancel_url: `${origin}/fix/${fix.id}`,
+      body: params.toString(),
+      cache: 'no-store',
     });
 
-    console.log('[stripe-checkout] Session created:', session.id);
-    return NextResponse.json({ url: session.url });
+    const stripeData = await stripeRes.json();
+
+    if (!stripeRes.ok) {
+      console.error('[stripe-checkout] Stripe API error:', stripeData);
+      return NextResponse.json(
+        { error: stripeData?.error?.message || 'Stripe-feil' },
+        { status: 500 }
+      );
+    }
+
+    console.log('[stripe-checkout] Session created:', stripeData.id);
+    return NextResponse.json({ url: stripeData.url });
   } catch (err: unknown) {
-    // Log full error server-side for Vercel logs
-    console.error('[stripe-checkout] ERROR:', err);
-    const message = err instanceof Error ? err.message : 'Ukjent Stripe-feil';
+    console.error('[stripe-checkout] Fetch error:', err);
+    const message = err instanceof Error ? err.message : 'Nettverksfeil mot Stripe';
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
