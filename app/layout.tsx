@@ -14,14 +14,40 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CodeMedic - Premium teknisk hjelp for WordPress og nettbutikk",
-  description: "Få profesjonell teknisk hjelp for WordPress, WooCommerce og web-feil. Faste priser, rask levering og betal først når jobben er godkjent.",
-  keywords: "WordPress hjelp, WooCommerce feil, teknisk support, webutvikling, nettbutikk fikser",
-  authors: [{ name: "CodeMedic" }],
+  metadataBase: new URL('https://codemedic.no'),
+  title: {
+    default: 'CodeMedic — Premium WordPress og web-hjelp fra norsk utvikler',
+    template: '%s | CodeMedic',
+  },
+  description: 'Få profesjonell hjelp med WordPress-feil, WooCommerce, hastighet og CSS fra en norsk utvikler. Fast pris, rask leveranse og betal først når jobben er godkjent.',
+  keywords: [
+    'WordPress hjelp Norge', 'WooCommerce feil', 'WordPress utvikler norsk',
+    'fikse WordPress', 'teknisk hjelp nettside', 'nettbutikk feil', 'CSS feil fikse',
+    'WordPress support norsk', 'hastighetsoptimalisering WordPress', 'no-cure-no-pay webservice',
+  ],
+  authors: [{ name: 'CodeMedic', url: 'https://codemedic.no' }],
+  robots: { index: true, follow: true },
+  icons: {
+    icon: '/logo.png',
+    apple: '/logo.png',
+  },
   openGraph: {
-    title: "CodeMedic - Premium teknisk hjelp",
-    description: "Profesjonell teknisk hjelp for WordPress og nettbutikk-feil. Betal først når jobben er godkjent.",
-    type: "website",
+    title: 'CodeMedic — Premium norsk WordPress-hjelp',
+    description: 'Profesjonell teknisk hjelp for WordPress og nettbutikk-feil. Betal kun når jobben er godkjent.',
+    type: 'website',
+    url: 'https://codemedic.no',
+    siteName: 'CodeMedic',
+    images: [{ url: '/logo.png', width: 512, height: 512, alt: 'CodeMedic' }],
+    locale: 'nb_NO',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'CodeMedic — Premium norsk WordPress-hjelp',
+    description: 'Profesjonell teknisk hjelp for WordPress og nettbutikk-feil. Betal kun når jobben er godkjent.',
+    images: ['/logo.png'],
+  },
+  alternates: {
+    canonical: 'https://codemedic.no',
   },
 };
 

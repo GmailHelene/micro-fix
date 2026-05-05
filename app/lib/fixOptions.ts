@@ -41,6 +41,12 @@ export const categories = [
     description: 'Malware-fjerning, sikkerhetsoppdateringer og beskyttelse mot angrep.',
     icon: '🔒',
   },
+  {
+    id: 'other',
+    name: 'Annet',
+    description: 'Noe som ikke passer inn i kategoriene over? Beskriv det her, så vurderer vi om vi kan hjelpe.',
+    icon: '💬',
+  },
 ];
 
 export const packages = [

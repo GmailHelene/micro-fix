@@ -24,21 +24,24 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Ikke innlogget' }, { status: 401 });
   }
 
-  const { error } = await supabase.from('fix_requests').insert({
-    user_id: user.id,
-    title,
-    description,
-    category,
-    package_name: packageName,
-    price,
-    estimated_time: estimatedTime,
-    status: 'pending_approval',
-    payment_status: 'unpaid',
-  });
+  const { data: newFix, error } = await supabase
+    .from('fix_requests')
+    .insert({
+      user_id: user.id,
+      title,
+      description,
+      category,
+      package_name: packageName,
+      price,
+      status: 'pending_approval',
+      payment_status: 'unpaid',
+    })
+    .select('id')
+    .single();
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 400 });
   }
 
-  return NextResponse.json({ success: true });
+  return NextResponse.json({ success: true, id: newFix.id });
 }

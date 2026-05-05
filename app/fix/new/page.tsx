@@ -20,6 +20,7 @@ export default function NewFixPage() {
 
   const [summary, setSummary]       = useState('');
   const [description, setDescription] = useState('');
+  const [otherDescription, setOtherDescription] = useState('');
   const [pageUrl, setPageUrl]       = useState('');
   const [screenshotUrl, setScreenshotUrl] = useState('');
   const [triedBefore, setTriedBefore] = useState('');
@@ -28,6 +29,8 @@ export default function NewFixPage() {
   const [packageId, setPackageId]   = useState(packages[0].id);
   const [loading, setLoading]       = useState(false);
   const [error, setError]           = useState<string | null>(null);
+
+  const isOtherCategory = category === 'other';
 
   // Auth-guard
   useEffect(() => {
@@ -49,10 +52,11 @@ export default function NewFixPage() {
     setLoading(true);
 
     const fullDescription = [
-      `URL: ${pageUrl}`,
-      `Skjermbilde: ${screenshotUrl}`,
+      ...(pageUrl ? [`URL: ${pageUrl}`] : []),
+      ...(screenshotUrl ? [`Skjermbilde: ${screenshotUrl}`] : []),
       `Kritikalitet: ${criticalities.find(c => c.value === criticality)?.label ?? criticality}`,
       `Hva er prøvd: ${triedBefore || 'Ikke oppgitt'}`,
+      ...(isOtherCategory && otherDescription ? [``, `Hva handler det om:`, otherDescription] : []),
       ``,
       `Problembeskrivelse:`,
       description,
@@ -170,11 +174,29 @@ export default function NewFixPage() {
                   </button>
                 ))}
               </div>
+              {isOtherCategory && (
+                <div className="mt-4 rounded-xl bg-slate-50 border border-slate-200 p-4">
+                  <label className="block text-sm font-semibold text-slate-800 mb-1.5">
+                    Hva handler forespørselen om? <span className="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-slate-300"
+                    placeholder="Beskriv kort hva du trenger hjelp med, så vurderer vi om og hvordan vi kan hjelpe."
+                    value={otherDescription}
+                    onChange={e => setOtherDescription(e.target.value)}
+                    rows={3}
+                    required
+                  />
+                </div>
+              )}
             </div>
 
             {/* Pakkevalg */}
             <div className="rounded-3xl bg-white border border-slate-200 p-6 shadow-sm">
-              <label className="block text-sm font-semibold text-slate-800 mb-3">Velg pakke</label>
+              <label className="block text-sm font-semibold text-slate-800 mb-1">Velg pakke</label>
+              <p className="text-xs text-slate-500 mb-3">
+                Velg pakken som passer best til problemets omfang. Prisen er en <strong>startpris</strong> — vi vurderer alltid forespørselen og bekrefter pris før du betaler.
+              </p>
               <div className="space-y-2">
                 {packages.map(pkg => (
                   <button
@@ -191,15 +213,21 @@ export default function NewFixPage() {
                       <div>
                         <div className="font-semibold text-sm">{pkg.name}</div>
                         <div className={`text-xs mt-0.5 ${packageId === pkg.id ? 'text-slate-300' : 'text-slate-500'}`}>
-                          fra kr {pkg.price}
+                          {pkg.description}
                         </div>
                       </div>
-                      <div className={`text-xl font-bold ${packageId === pkg.id ? 'text-white' : 'text-blue-600'}`}>
-                        {pkg.price} kr
+                      <div className={`text-right shrink-0 ml-3`}>
+                        <div className={`text-xs ${packageId === pkg.id ? 'text-slate-300' : 'text-slate-400'}`}>fra kr</div>
+                        <div className={`text-xl font-bold ${packageId === pkg.id ? 'text-white' : 'text-blue-600'}`}>{pkg.price}</div>
                       </div>
                     </div>
                   </button>
                 ))}
+              </div>
+              <div className="mt-4 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 text-xs text-amber-800 leading-relaxed">
+                <strong>💡 Slik fungerer prising hos CodeMedic:</strong><br/>
+                Prisene over er <em>startpriser</em>. Etter at du sender inn forespørselen, gjennomgår vi oppdraget og bekrefter endelig pris.
+                Dersom jobben er mer omfattende enn pakken tilsier, sender vi deg et <strong>custom tilbud med ny pris</strong> — du velger selv om du vil godta eller avslå. Du betaler aldri uten at du har godkjent prisen.
               </div>
             </div>
 
@@ -220,7 +248,8 @@ export default function NewFixPage() {
 
               <div>
                 <label className="block text-sm font-semibold text-slate-800 mb-1.5">
-                  URL til siden <span className="text-red-500">*</span>
+                  URL til siden {!isOtherCategory && <span className="text-red-500">*</span>}
+                  {isOtherCategory && <span className="text-xs font-normal text-slate-500 ml-1">(valgfritt)</span>}
                 </label>
                 <input
                   type="url"
@@ -228,14 +257,14 @@ export default function NewFixPage() {
                   placeholder="https://din-nettside.no/side-med-feil"
                   value={pageUrl}
                   onChange={e => setPageUrl(e.target.value)}
-                  required
+                  required={!isOtherCategory}
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-semibold text-slate-800 mb-1.5">
-                  Skjermbilde <span className="text-red-500">*</span>
-                  <span className="text-xs font-normal text-slate-500 ml-2">Lim inn lenke (Imgur, Google Drive, Dropbox o.l.)</span>
+                  Skjermbilde
+                  <span className="text-xs font-normal text-slate-500 ml-2">Valgfritt — lim inn lenke (Imgur, Google Drive, Dropbox o.l.)</span>
                 </label>
                 <input
                   type="url"
@@ -243,7 +272,6 @@ export default function NewFixPage() {
                   placeholder="https://imgur.com/ditt-skjermbilde"
                   value={screenshotUrl}
                   onChange={e => setScreenshotUrl(e.target.value)}
-                  required
                 />
                 <p className="text-xs text-slate-400 mt-1">Tips: Ta skjermbilde → last opp på imgur.com (gratis) → lim inn lenken</p>
               </div>
@@ -299,9 +327,9 @@ export default function NewFixPage() {
               disabled={loading}
               className="w-full rounded-full bg-slate-900 py-4 text-sm font-bold text-white hover:bg-slate-800 disabled:opacity-50 transition-colors shadow-lg"
             >
-              {loading ? 'Sender inn...' : `Send forespørsel — ${selectedPackage.price} kr`}
+              {loading ? 'Sender inn...' : 'Send forespørsel →'}
             </button>
-            <p className="text-center text-xs text-slate-400">Du betaler ikke nå. Betaling skjer kun etter at jobben er godkjent.</p>
+            <p className="text-center text-xs text-slate-400">Du betaler ikke nå. Vi gjennomgår forespørselen og bekrefter pris — du godkjenner før betaling starter.</p>
           </form>
 
           {/* Sidebar */}

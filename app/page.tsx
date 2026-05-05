@@ -5,7 +5,14 @@ import { categories, packages } from './lib/fixOptions';
 
 export const metadata = {
   title: 'CodeMedic — Premium WordPress og web-hjelp fra norsk utvikler',
-  description: 'Få profesjonell hjelp med WordPress-feil, WooCommerce, hastighet og CSS. Du betaler kun etter godkjent levering. Fast pris, rask leveranse.',
+  description: 'Få profesjonell hjelp med WordPress-feil, WooCommerce, hastighet og CSS fra en norsk utvikler. Du betaler kun etter godkjent levering. Fast pris, rask leveranse.',
+  alternates: { canonical: 'https://codemedic.no' },
+  openGraph: {
+    title: 'CodeMedic — Premium norsk WordPress-hjelp',
+    description: 'Profesjonell WordPress og web-hjelp. Betal kun når jobben er godkjent.',
+    url: 'https://codemedic.no',
+    images: [{ url: '/logo.png', width: 512, height: 512, alt: 'CodeMedic' }],
+  },
 };
 
 const testimonials = [
@@ -35,21 +42,38 @@ export default async function HomePage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'Service',
-    name: 'CodeMedic',
-    description: 'Premium norsk WordPress og web-hjelp med fast pris og no-cure-no-pay garanti.',
-    provider: { '@type': 'Person', name: 'CodeMedic', url: process.env.NEXT_PUBLIC_BASE_URL },
-    areaServed: { '@type': 'Country', name: 'Norway' },
-    offers: packages.map(p => ({
-      '@type': 'Offer',
-      name: p.name,
-      price: p.price,
-      priceCurrency: 'NOK',
-      description: p.description,
-    })),
-  };
+  const base = process.env.NEXT_PUBLIC_BASE_URL || 'https://codemedic.no';
+
+  const jsonLd = [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      name: 'CodeMedic',
+      url: base,
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'ProfessionalService',
+      name: 'CodeMedic',
+      description: 'Premium norsk WordPress og web-hjelp med fast pris og no-cure-no-pay garanti.',
+      url: base,
+      email: 'support@codemedic.no',
+      provider: { '@type': 'Person', name: 'CodeMedic', url: base },
+      areaServed: { '@type': 'Country', name: 'Norway' },
+      hasOfferCatalog: {
+        '@type': 'OfferCatalog',
+        name: 'CodeMedic tjenester',
+        itemListElement: packages.map(p => ({
+          '@type': 'Offer',
+          name: p.name,
+          price: p.price,
+          priceCurrency: 'NOK',
+          description: p.description,
+          url: base,
+        })),
+      },
+    },
+  ];
 
   return (
     <>

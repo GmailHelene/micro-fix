@@ -4,4 +4,4 @@ Disallow: /admin/
 Disallow: /dashboard/
 Disallow: /fix/
 
-Sitemap: https://micro-fix.vercel.app.xml
+Sitemap: https://codemedic.no/sitemap.xml

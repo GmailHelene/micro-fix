@@ -243,12 +243,24 @@ function FixDetailContent() {
                   </div>
                 ) : (
                   <>
+                    <div className="rounded-xl bg-slate-50 border border-slate-200 px-4 py-3 text-xs text-slate-600 mb-3 space-y-1.5">
+                      <p className="font-semibold text-slate-700">Tre trygge måter å dele tilgang på:</p>
+                      <p>
+                        <strong>1. WordPress Application Password (anbefalt)</strong> — Logg inn i WP-admin → Brukere → din bruker → scroll ned til «Application Passwords» → Legg til nytt. Gir begrenset tilgang og kan slettes etterpå.
+                      </p>
+                      <p>
+                        <strong>2. Midlertidig admin-bruker</strong> — Opprett en ny admin-bruker kun til dette oppdraget og slett den når jobben er ferdig.
+                      </p>
+                      <p>
+                        <strong>3. FTP/SFTP</strong> — Fungerer om jobben krever filnivå-tilgang (f.eks. tema-filer eller PHP).
+                      </p>
+                    </div>
                     <textarea
-                      className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-slate-300 mb-3"
-                      placeholder="F.eks: WP-admin: https://nettside.no/wp-admin | Bruker: admin | Passord: xxxxx&#10;FTP: ftp.nettside.no | Bruker: ftpuser | Passord: xxxxx&#10;&#10;Merk: informasjon slettes etter fullføring."
+                      className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-slate-300 mb-3 font-mono"
+                      placeholder={`WP-admin URL: https://nettside.no/wp-admin\nBruker: admin\nApplication Password: xxxx xxxx xxxx xxxx\n\n— eller —\n\nFTP: ftp.nettside.no\nBruker: ftpuser\nPassord: xxxxx`}
                       value={accessInfo}
                       onChange={e => setAccessInfo(e.target.value)}
-                      rows={4}
+                      rows={5}
                     />
                     <button
                       onClick={handleSaveAccessInfo}
@@ -257,7 +269,7 @@ function FixDetailContent() {
                     >
                       {savingAccess ? 'Lagrer...' : 'Lagre tilgangsinfo'}
                     </button>
-                    <p className="text-xs text-slate-400 mt-2">Tilgangsinformasjon er kryptert og slettes etter at jobben er fullført.</p>
+                    <p className="text-xs text-slate-400 mt-2">Tilgangsinformasjon er sikret og slettes etter at jobben er fullført.</p>
                   </>
                 )}
               </div>
