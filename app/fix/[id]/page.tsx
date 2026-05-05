@@ -91,6 +91,7 @@ function FixDetailContent() {
   const [payError, setPayError] = useState<string | null>(null);
   const [sendingMsg, setSendingMsg] = useState(false);
   const [respondingOffer, setRespondingOffer] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
   const showToast = (msg: string, duration = 6000) => {
@@ -182,6 +183,23 @@ function FixDetailContent() {
     setRespondingOffer(false);
   };
 
+  const handleCancel = async () => {
+    if (!confirm('Er du sikker på at du vil trekke tilbake forespørselen?')) return;
+    setCancelling(true);
+    const res = await fetch(`/api/fix/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cancel_request: true }),
+    });
+    setCancelling(false);
+    if (res.ok) {
+      showToast('Forespørselen er trukket tilbake.');
+      fetchFix();
+    } else {
+      showToast('Noe gikk galt. Prøv igjen.');
+    }
+  };
+
   const handleSaveAccessInfo = async () => {
     setSavingAccess(true);
     const res = await fetch(`/api/fix/${id}`, {
@@ -209,6 +227,7 @@ function FixDetailContent() {
   const needsPayment = fix.status === 'awaiting_payment' && fix.payment_status === 'unpaid';
   const hasOffer = fix.status === 'awaiting_offer_approval';
   const showAccessSection = ['awaiting_payment', 'in_progress', 'completed'].includes(fix.status);
+  const canCancel = fix.status === 'pending_approval';
 
   const paymentStatusLabel =
     fix.payment_status === 'paid'       ? 'Betalt' :
@@ -322,6 +341,15 @@ function FixDetailContent() {
                     <span className={`w-1.5 h-1.5 rounded-full ${sc.dot}`} />{statusLabels[fix.status] ?? fix.status}
                   </span>
                 </div>
+                {canCancel && (
+                  <button
+                    onClick={handleCancel}
+                    disabled={cancelling}
+                    className="shrink-0 rounded-full border border-red-200 text-red-500 text-xs px-4 py-2 hover:bg-red-50 disabled:opacity-40 transition-colors"
+                  >
+                    {cancelling ? 'Trekker tilbake...' : 'Trekk tilbake'}
+                  </button>
+                )}
               </div>
               <div className="bg-slate-50 rounded-2xl p-4 text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">
                 {fix.description}

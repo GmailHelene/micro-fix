@@ -70,7 +70,7 @@ export default function NewFixPage() {
         description: fullDescription,
         category,
         packageName: selectedPackage.name,
-        price: selectedPackage.price,
+        price: selectedPackage.price ?? null,
       }),
     });
 
@@ -195,40 +195,63 @@ export default function NewFixPage() {
             <div className="rounded-3xl bg-white border border-slate-200 p-6 shadow-sm">
               <label className="block text-sm font-semibold text-slate-800 mb-1">Velg pakke</label>
               <p className="text-xs text-slate-500 mb-3">
-                Velg pakken som passer best til problemets omfang. Prisen er en <strong>startpris</strong> — vi vurderer alltid forespørselen og bekrefter pris før du betaler.
+                Velg pakken som passer best — eller velg <strong>Custom</strong> om du er usikker, så vurderer vi omfang og pris for deg.
               </p>
               <div className="space-y-2">
-                {packages.map(pkg => (
-                  <button
-                    key={pkg.id}
-                    type="button"
-                    onClick={() => setPackageId(pkg.id)}
-                    className={`w-full rounded-2xl border p-4 text-left transition-all ${
-                      packageId === pkg.id
-                        ? 'border-slate-900 bg-slate-900 text-white'
-                        : 'border-slate-200 bg-white text-slate-700 hover:border-slate-400'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="font-semibold text-sm">{pkg.name}</div>
-                        <div className={`text-xs mt-0.5 ${packageId === pkg.id ? 'text-slate-300' : 'text-slate-500'}`}>
-                          {pkg.description}
+                {packages.map(pkg => {
+                  const isCustom = pkg.id === 'custom';
+                  const isSelected = packageId === pkg.id;
+                  return (
+                    <button
+                      key={pkg.id}
+                      type="button"
+                      onClick={() => setPackageId(pkg.id)}
+                      className={`w-full rounded-2xl border p-4 text-left transition-all ${
+                        isSelected
+                          ? isCustom
+                            ? 'border-purple-600 bg-purple-700 text-white'
+                            : 'border-slate-900 bg-slate-900 text-white'
+                          : isCustom
+                            ? 'border-purple-200 bg-purple-50 text-slate-700 hover:border-purple-400'
+                            : 'border-slate-200 bg-white text-slate-700 hover:border-slate-400'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-sm">{pkg.name}</span>
+                            {isCustom && !isSelected && (
+                              <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium">Usikker?</span>
+                            )}
+                          </div>
+                          <div className={`text-xs mt-0.5 ${isSelected ? 'text-slate-300' : isCustom ? 'text-purple-600' : 'text-slate-500'}`}>
+                            {pkg.description}
+                          </div>
+                        </div>
+                        <div className="text-right shrink-0 ml-3">
+                          {isCustom ? (
+                            <div className={`text-sm font-bold ${isSelected ? 'text-white' : 'text-purple-600'}`}>Vi setter pris</div>
+                          ) : (
+                            <>
+                              <div className={`text-xs ${isSelected ? 'text-slate-300' : 'text-slate-400'}`}>fra kr</div>
+                              <div className={`text-xl font-bold ${isSelected ? 'text-white' : 'text-blue-600'}`}>{pkg.price}</div>
+                            </>
+                          )}
                         </div>
                       </div>
-                      <div className={`text-right shrink-0 ml-3`}>
-                        <div className={`text-xs ${packageId === pkg.id ? 'text-slate-300' : 'text-slate-400'}`}>fra kr</div>
-                        <div className={`text-xl font-bold ${packageId === pkg.id ? 'text-white' : 'text-blue-600'}`}>{pkg.price}</div>
-                      </div>
-                    </div>
-                  </button>
-                ))}
+                    </button>
+                  );
+                })}
               </div>
-              <div className="mt-4 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 text-xs text-amber-800 leading-relaxed">
-                <strong>💡 Slik fungerer prising hos CodeMedic:</strong><br/>
-                Prisene over er <em>startpriser</em>. Etter at du sender inn forespørselen, gjennomgår vi oppdraget og bekrefter endelig pris.
-                Dersom jobben er mer omfattende enn pakken tilsier, sender vi deg et <strong>custom tilbud med ny pris</strong> — du velger selv om du vil godta eller avslå. Du betaler aldri uten at du har godkjent prisen.
-              </div>
+              {packageId === 'custom' ? (
+                <div className="mt-4 rounded-xl bg-purple-50 border border-purple-200 px-4 py-3 text-xs text-purple-800 leading-relaxed">
+                  <strong>💬 Custom-vurdering:</strong> Beskriv problemet ditt nedenfor, så gjennomgår vi det og sender deg et tilbud med forslag til omfang og pris. Du bestemmer om du vil gå videre — ingen forpliktelse.
+                </div>
+              ) : (
+                <div className="mt-4 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 text-xs text-amber-800 leading-relaxed">
+                  <strong>💡 Startpriser:</strong> Vi bekrefter alltid endelig pris etter gjennomgang. Er jobben mer enn pakken tilsier, sender vi et custom tilbud — du velger selv.
+                </div>
+              )}
             </div>
 
             {/* Problemdetaljer */}
@@ -348,7 +371,10 @@ export default function NewFixPage() {
               <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Valgt pakke</p>
               <div className="flex items-baseline justify-between mb-3">
                 <span className="font-bold text-slate-900">{selectedPackage.name}</span>
-                <span className="text-2xl font-bold text-blue-600">{selectedPackage.price} kr</span>
+                {selectedPackage.price != null
+                  ? <span className="text-2xl font-bold text-blue-600">{selectedPackage.price} kr</span>
+                  : <span className="text-sm font-semibold text-purple-600">Pris settes av oss</span>
+                }
               </div>
               <p className="text-sm text-slate-600 mb-3">{selectedPackage.description}</p>
               <ul className="space-y-1.5">

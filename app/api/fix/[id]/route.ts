@@ -43,6 +43,15 @@ export async function PUT(
   if (body.description !== undefined) allowed.description = body.description;
   if (body.access_info !== undefined) allowed.access_info = body.access_info;
 
+  // Kunde trekker tilbake forespørsel (kun fra pending_approval)
+  if (body.cancel_request === true) {
+    if (currentFix.status === 'pending_approval') {
+      allowed.status = 'cancelled';
+    } else {
+      return NextResponse.json({ error: 'Kan ikke trekke tilbake — forespørselen er allerede under behandling' }, { status: 400 });
+    }
+  }
+
   // Kunde godtar eller avslår custom tilbud
   if (body.accept_offer === true || body.decline_offer === true) {
     if (currentFix.status === 'awaiting_offer_approval') {

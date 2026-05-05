@@ -77,6 +77,15 @@ export const packages = [
     price: 1490,
     highlight: false,
   },
+  {
+    id: 'custom',
+    name: 'CodeMedic Custom',
+    description: 'Usikker på hva du trenger? Beskriv problemet — vi setter riktig omfang og pris.',
+    features: ['Skreddersydd vurdering', 'Vi foreslår omfang og pris', 'Du godkjenner før noe starter', 'Ingen binding'],
+    fitsFor: ['Du er usikker på hvilken pakke som passer', 'Problemet er vanskelig å beskrive', 'Du vil ha en uforpliktende vurdering'],
+    price: null,
+    highlight: false,
+  },
 ];
 
 export const statusLabels: Record<string, string> = {
