@@ -1,4 +1,4 @@
-import { createServerSupabase } from '../lib/supabaseServer';
+import { createServiceSupabase } from '../lib/supabaseServer';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { statusLabels, statusColors } from '../lib/fixOptions';
@@ -42,7 +42,7 @@ function StatusProgress({ status }: { status: string }) {
 }
 
 export default async function DashboardPage() {
-  const supabase = await createServerSupabase();
+  const supabase = await createServiceSupabase();
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) redirect('/login');

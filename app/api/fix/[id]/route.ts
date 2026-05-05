@@ -12,6 +12,10 @@ const createSupabase = async () => {
       cookies: {
         get(name: string) { return cookieStore.get(name)?.value; },
       },
+      global: {
+        fetch: (url: RequestInfo | URL, init?: RequestInit) =>
+          fetch(url, { ...init, cache: 'no-store' }),
+      },
     }
   );
 };
