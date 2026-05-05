@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { createServerSupabase } from './lib/supabaseServer';
 import { categories, packages } from './lib/fixOptions';
 
@@ -58,7 +59,10 @@ export default async function HomePage() {
         <div className="rounded-[3rem] bg-white p-10 shadow-[0_40px_120px_rgba(15,23,42,0.08)]">
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
             <div>
-              <p className="text-sm uppercase tracking-[0.35em] text-slate-500">CodeMedic</p>
+              <div className="flex items-center gap-3 mb-2">
+                <Image src="/logo.png" alt="CodeMedic" width={56} height={56} className="rounded-2xl" />
+                <p className="text-sm uppercase tracking-[0.35em] text-slate-500">CodeMedic</p>
+              </div>
               <h1 className="mt-4 max-w-2xl text-5xl font-semibold leading-tight text-slate-900">
                 Premium, norsk teknisk hjelp for WordPress, nettbutikk og web-feil.
               </h1>
@@ -114,13 +118,22 @@ export default async function HomePage() {
           </div>
           <div className="mt-8 grid gap-6 md:grid-cols-3">
             {packages.map(pkg => (
-              <div key={pkg.id} className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xl font-semibold text-slate-900">{pkg.name}</h3>
-                  <span className="text-slate-500">{pkg.estimatedTime}</span>
-                </div>
-                <p className="mt-3 text-slate-600">{pkg.description}</p>
-                <p className="mt-6 text-3xl font-bold text-blue-600">{pkg.price} kr</p>
+              <div key={pkg.id} className={`rounded-[2rem] border bg-white p-6 shadow-sm relative ${pkg.highlight ? 'border-blue-400 ring-2 ring-blue-100' : 'border-slate-200'}`}>
+                {pkg.highlight && (
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full">Mest populær</span>
+                )}
+                <h3 className="text-xl font-semibold text-slate-900">{pkg.name}</h3>
+                <p className="mt-3 text-slate-600 text-sm">{pkg.description}</p>
+                <p className="mt-6 text-3xl font-bold text-blue-600">
+                  <span className="text-base font-normal text-slate-500">fra kr </span>{pkg.price}
+                </p>
+                <ul className="mt-4 space-y-2">
+                  {pkg.features.map(f => (
+                    <li key={f} className="flex items-center gap-2 text-sm text-slate-600">
+                      <span className="text-emerald-500 font-bold">✓</span>{f}
+                    </li>
+                  ))}
+                </ul>
               </div>
             ))}
           </div>

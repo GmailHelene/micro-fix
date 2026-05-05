@@ -67,7 +67,6 @@ export default function NewFixPage() {
         category,
         packageName: selectedPackage.name,
         price: selectedPackage.price,
-        estimatedTime: selectedPackage.estimatedTime,
       }),
     });
 
@@ -112,7 +111,7 @@ export default function NewFixPage() {
               </li>
               <li className="flex gap-3">
                 <span className="w-6 h-6 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">3</span>
-                <span>Etter betaling starter arbeidet umiddelbart. Levering innen {selectedPackage.estimatedTime}.</span>
+                <span>Etter betaling starter arbeidet umiddelbart. Levering innen 24–48 timer.</span>
               </li>
             </ol>
           </div>
@@ -192,7 +191,7 @@ export default function NewFixPage() {
                       <div>
                         <div className="font-semibold text-sm">{pkg.name}</div>
                         <div className={`text-xs mt-0.5 ${packageId === pkg.id ? 'text-slate-300' : 'text-slate-500'}`}>
-                          {pkg.estimatedTime}
+                          fra kr {pkg.price}
                         </div>
                       </div>
                       <div className={`text-xl font-bold ${packageId === pkg.id ? 'text-white' : 'text-blue-600'}`}>

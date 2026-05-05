@@ -46,8 +46,9 @@ export async function PUT(
     if (body.status === 'awaiting_payment') updates.payment_status = 'unpaid';
     if (body.status === 'completed') updates.access_info = null;
   }
-  if (body.admin_note !== undefined) updates.admin_note = body.admin_note;
-  if (body.price !== undefined)      updates.price = body.price;
+  if (body.admin_note !== undefined)          updates.admin_note = body.admin_note;
+  if (body.price !== undefined)               updates.price = body.price;
+  if (body.custom_payment_url !== undefined)  updates.custom_payment_url = body.custom_payment_url;
 
   const { data: fixBefore } = await supabase.from('fix_requests').select('title, user_id').eq('id', id).single();
 

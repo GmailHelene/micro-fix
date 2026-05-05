@@ -9,6 +9,7 @@ interface Fix {
   created_at: string; user_id: string; category?: string;
   package_name?: string; price?: number; estimated_time?: string;
   payment_status?: string; access_info?: string; admin_note?: string;
+  custom_payment_url?: string;
 }
 interface Message {
   id: string; content: string; sender: 'customer' | 'admin'; created_at: string;
@@ -37,6 +38,7 @@ export default function AdminFixDetailPage() {
   const [sendingMsg, setSendingMsg] = useState(false);
   const [working, setWorking] = useState(false);
   const [stripeUrl, setStripeUrl] = useState<string | null>(null);
+  const [customPaymentInput, setCustomPaymentInput] = useState('');
   const [copySuccess, setCopySuccess] = useState(false);
   const [toast, setToast] = useState<{ text: string; type: 'ok' | 'err' } | null>(null);
 
@@ -48,7 +50,11 @@ export default function AdminFixDetailPage() {
   const fetchFix = useCallback(async () => {
     const res = await fetch(`/api/admin/fix/${id}`);
     const data = await res.json();
-    if (!data.error) { setFix(data); setCustomPrice(String(data.price ?? '')); }
+    if (!data.error) {
+      setFix(data);
+      setCustomPrice(String(data.price ?? ''));
+      setCustomPaymentInput(data.custom_payment_url ?? '');
+    }
     setLoading(false);
   }, [id]);
 
@@ -345,39 +351,73 @@ export default function AdminFixDetailPage() {
 
             {/* Stripe-betalingslenke */}
             {fix.status === 'awaiting_payment' && (
-              <div className="rounded-3xl bg-blue-50 border border-blue-200 p-5">
-                <h3 className="text-sm font-semibold text-blue-900 mb-2">Betalingslenke til kunde</h3>
-                <p className="text-xs text-blue-700 mb-3">Generer en Stripe-lenke og del med kunden via e-post eller chat.</p>
+              <div className="rounded-3xl bg-blue-50 border border-blue-200 p-5 space-y-4">
+                <h3 className="text-sm font-semibold text-blue-900">Betalingslenke til kunde</h3>
 
-                {!stripeUrl ? (
-                  <button
-                    onClick={generateStripeUrl}
-                    disabled={working}
-                    className="w-full rounded-full bg-blue-600 text-white py-2.5 text-sm font-semibold hover:bg-blue-700 disabled:opacity-40 transition-colors"
-                  >
-                    {working ? 'Genererer...' : 'Generer Stripe-lenke'}
-                  </button>
-                ) : (
-                  <div className="space-y-2">
-                    <div className="rounded-xl bg-white border border-blue-200 px-3 py-2 text-xs font-mono text-blue-800 break-all">
-                      {stripeUrl.slice(0, 60)}...
-                    </div>
-                    <button
-                      onClick={copyStripeUrl}
-                      className={`w-full rounded-full py-2.5 text-sm font-semibold transition-colors ${
-                        copySuccess ? 'bg-emerald-600 text-white' : 'bg-blue-600 text-white hover:bg-blue-700'
-                      }`}
-                    >
-                      {copySuccess ? '✓ Kopiert!' : 'Kopier lenke'}
-                    </button>
+                {/* Standard pakke — generer fra Stripe Products */}
+                <div>
+                  <p className="text-xs text-blue-700 mb-2 font-medium">Standard pakke (fra Stripe Products)</p>
+                  {!stripeUrl ? (
                     <button
                       onClick={generateStripeUrl}
-                      className="w-full rounded-full border border-blue-200 py-2 text-xs text-blue-700 hover:bg-blue-100 transition-colors"
+                      disabled={working}
+                      className="w-full rounded-full bg-blue-600 text-white py-2.5 text-sm font-semibold hover:bg-blue-700 disabled:opacity-40 transition-colors"
                     >
-                      Generer ny lenke
+                      {working ? 'Genererer...' : 'Generer Stripe-lenke'}
+                    </button>
+                  ) : (
+                    <div className="space-y-2">
+                      <div className="rounded-xl bg-white border border-blue-200 px-3 py-2 text-xs font-mono text-blue-800 break-all">
+                        {stripeUrl.slice(0, 60)}...
+                      </div>
+                      <button
+                        onClick={copyStripeUrl}
+                        className={`w-full rounded-full py-2.5 text-sm font-semibold transition-colors ${
+                          copySuccess ? 'bg-emerald-600 text-white' : 'bg-blue-600 text-white hover:bg-blue-700'
+                        }`}
+                      >
+                        {copySuccess ? '✓ Kopiert!' : 'Kopier lenke'}
+                      </button>
+                      <button onClick={generateStripeUrl} className="w-full rounded-full border border-blue-200 py-2 text-xs text-blue-700 hover:bg-blue-100 transition-colors">
+                        Generer ny lenke
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Custom tilbud — lim inn Stripe payment link */}
+                <div className="border-t border-blue-200 pt-4">
+                  <p className="text-xs text-blue-700 mb-2 font-medium">Custom tilbud (lim inn Stripe payment link)</p>
+                  <div className="flex gap-2">
+                    <input
+                      value={customPaymentInput}
+                      onChange={e => setCustomPaymentInput(e.target.value)}
+                      placeholder="https://buy.stripe.com/..."
+                      className="flex-1 rounded-xl border border-blue-200 bg-white px-3 py-2 text-xs text-slate-900 outline-none focus:ring-2 focus:ring-blue-300"
+                    />
+                    <button
+                      disabled={working}
+                      onClick={async () => {
+                        setWorking(true);
+                        const res = await fetch(`/api/admin/fix/${id}`, {
+                          method: 'PUT',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ custom_payment_url: customPaymentInput || null }),
+                        });
+                        const data = await res.json();
+                        if (!data.error) { fetchFix(); showToast('Custom lenke lagret!'); }
+                        else showToast(data.error, 'err');
+                        setWorking(false);
+                      }}
+                      className="rounded-xl bg-blue-600 text-white px-3 py-2 text-xs font-semibold hover:bg-blue-700 disabled:opacity-40 transition-colors whitespace-nowrap"
+                    >
+                      Lagre
                     </button>
                   </div>
-                )}
+                  {fix.custom_payment_url && (
+                    <p className="text-xs text-emerald-600 mt-1.5">✓ Custom lenke er satt — kunden bruker denne ved betaling</p>
+                  )}
+                </div>
               </div>
             )}
 

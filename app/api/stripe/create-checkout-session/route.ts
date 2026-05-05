@@ -14,14 +14,17 @@ const createSupabase = async () => {
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
-        },
-      },
-    }
+    { cookies: { get(name: string) { return cookieStore.get(name)?.value; } } }
   );
+};
+
+// Map package name → Stripe Price ID (set via env vars)
+const getPriceId = (packageName: string): string | null => {
+  const name = packageName?.toLowerCase() ?? '';
+  if (name.includes('basic'))    return process.env.STRIPE_PRICE_BASIC    ?? null;
+  if (name.includes('standard')) return process.env.STRIPE_PRICE_STANDARD ?? null;
+  if (name.includes('premium'))  return process.env.STRIPE_PRICE_PREMIUM  ?? null;
+  return null;
 };
 
 export async function POST(req: NextRequest) {
@@ -29,46 +32,47 @@ export async function POST(req: NextRequest) {
   const { requestId } = await req.json();
 
   const { data: { user } } = await supabase.auth.getUser();
-
   if (!user) return NextResponse.json({ error: 'Ikke innlogget' }, { status: 401 });
 
   const { data: fix, error: fetchError } = await supabase
     .from('fix_requests')
-    .select('id, title, price, status, payment_status')
+    .select('id, title, price, status, payment_status, package_name, custom_payment_url')
     .eq('id', requestId)
     .eq('user_id', user.id)
     .single();
 
   if (fetchError || !fix) return NextResponse.json({ error: 'Forespørsel ikke funnet' }, { status: 404 });
-
   if (fix.status !== 'awaiting_payment' || fix.payment_status !== 'unpaid') {
     return NextResponse.json({ error: 'Betaling kan ikke gjennomføres nå.' }, { status: 400 });
   }
 
+  // Hvis admin har limt inn en custom Stripe-lenke, returner den direkte
+  if (fix.custom_payment_url) {
+    return NextResponse.json({ url: fix.custom_payment_url });
+  }
+
   const origin = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
   const stripe = getStripe();
+
+  const priceId = getPriceId(fix.package_name ?? '');
 
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ['card', 'klarna'],
     mode: 'payment',
     customer_email: user.email || undefined,
     line_items: [
-      {
-        price_data: {
-          currency: 'nok',
-          product_data: {
-            name: fix.title,
-            description: 'Betaling for CodeMedic oppdrag',
+      priceId
+        ? { price: priceId, quantity: 1 }
+        : {
+            price_data: {
+              currency: 'nok',
+              product_data: { name: fix.title, description: 'Betaling for CodeMedic oppdrag' },
+              unit_amount: Math.round((fix.price || 0) * 100),
+            },
+            quantity: 1,
           },
-          unit_amount: Math.round((fix.price || 0) * 100),
-        },
-        quantity: 1,
-      },
     ],
-    metadata: {
-      request_id: fix.id,
-      user_id: user.id,
-    },
+    metadata: { request_id: fix.id, user_id: user.id },
     success_url: `${origin}/dashboard?payment=success`,
     cancel_url: `${origin}/fix/${fix.id}`,
   });
