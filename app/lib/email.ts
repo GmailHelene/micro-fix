@@ -1,6 +1,4 @@
-import { Resend } from 'resend';
-
-const FROM = 'CodeMedic <no-reply@codemedic.no>';
+import nodemailer from 'nodemailer';
 
 const statusMessages: Record<string, { subject: string; heading: string; body: string }> = {
   awaiting_payment: {
@@ -26,7 +24,7 @@ const statusMessages: Record<string, { subject: string; heading: string; body: s
   cancelled: {
     subject: 'ℹ️ Forespørselen din er avbrutt',
     heading: 'Forespørsel avbrutt',
-    body: 'Forespørselen din ble dessverre avbrutt. Har du spørsmål? Svar på denne e-posten så hjelper vi deg.',
+    body: 'Forespørselen din ble dessverre avbrutt. Har du spørsmål? Ta kontakt så hjelper vi deg.',
   },
 };
 
@@ -43,19 +41,30 @@ export async function sendStatusEmail({
   status: string;
   adminNote?: string;
 }) {
-  if (!process.env.RESEND_API_KEY) return;
+  if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) return;
 
-  const resend = new Resend(process.env.RESEND_API_KEY);
   const msg = statusMessages[status];
   if (!msg) return;
 
+  const transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT ?? 587),
+    secure: false,
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    },
+  });
+
   const base = process.env.NEXT_PUBLIC_BASE_URL || 'https://codemedic.no';
+  const from = process.env.EMAIL_FROM ?? process.env.SMTP_USER;
+
   const noteHtml = adminNote
     ? `<div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:12px 16px;margin:16px 0;font-size:14px;color:#9a3412"><strong>Melding fra CodeMedic:</strong><br/>${adminNote}</div>`
     : '';
 
-  await resend.emails.send({
-    from: FROM,
+  await transporter.sendMail({
+    from: `CodeMedic <${from}>`,
     to,
     subject: `${msg.subject} — ${fixTitle}`,
     html: `
