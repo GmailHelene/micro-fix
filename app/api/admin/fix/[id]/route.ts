@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/auth-helpers-nextjs';
 import Stripe from 'stripe';
+import { sendStatusEmail } from '@/app/lib/email';
 
 const createSupabase = async () => {
   const cookieStore = await cookies();
@@ -43,12 +44,31 @@ export async function PUT(
   if (body.status !== undefined) {
     updates.status = body.status;
     if (body.status === 'awaiting_payment') updates.payment_status = 'unpaid';
+    if (body.status === 'completed') updates.access_info = null;
   }
   if (body.admin_note !== undefined) updates.admin_note = body.admin_note;
   if (body.price !== undefined)      updates.price = body.price;
 
+  const { data: fixBefore } = await supabase.from('fix_requests').select('title, user_id').eq('id', id).single();
+
   const { error } = await supabase.from('fix_requests').update(updates).eq('id', id);
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+
+  // Send e-post til kunde ved statusendring
+  if (body.status !== undefined && fixBefore) {
+    const { data: profile } = await supabase.auth.admin.getUserById(fixBefore.user_id);
+    const email = profile?.user?.email;
+    if (email) {
+      await sendStatusEmail({
+        to: email,
+        fixTitle: fixBefore.title,
+        fixId: id,
+        status: body.status,
+        adminNote: body.admin_note,
+      }).catch(() => null);
+    }
+  }
+
   return NextResponse.json({ success: true });
 }
 
@@ -78,12 +98,12 @@ export async function POST(
   const origin = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 
   const session = await stripe.checkout.sessions.create({
-    payment_method_types: ['card'],
+    payment_method_types: ['card', 'klarna'],
     mode: 'payment',
     line_items: [{
       price_data: {
         currency: 'nok',
-        product_data: { name: fix.title, description: 'Betaling for Micro-fix oppdrag' },
+        product_data: { name: fix.title, description: 'Betaling for CodeMedic oppdrag' },
         unit_amount: Math.round((fix.price || 0) * 100),
       },
       quantity: 1,

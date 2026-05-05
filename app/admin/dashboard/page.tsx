@@ -16,13 +16,13 @@ const filterOptions = [
 export default async function AdminDashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ filter?: string; q?: string }>;
+  searchParams: Promise<{ filter?: string; q?: string; sort?: string }>;
 }) {
   const supabase = await createServerSupabase();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user || user.email !== process.env.NEXT_PUBLIC_ADMIN_EMAIL) redirect('/login');
 
-  const { filter = 'all', q = '' } = await searchParams;
+  const { filter = 'all', q = '', sort = 'newest' } = await searchParams;
 
   const { data: allFixes } = await supabase
     .from('fix_requests')
@@ -45,6 +45,11 @@ export default async function AdminDashboardPage({
       f.package_name?.toLowerCase().includes(query)
     );
   }
+
+  if (sort === 'oldest') displayed = [...displayed].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+  else if (sort === 'price-high') displayed = [...displayed].sort((a, b) => (b.price ?? 0) - (a.price ?? 0));
+  else if (sort === 'price-low')  displayed = [...displayed].sort((a, b) => (a.price ?? 0) - (b.price ?? 0));
+  else displayed = [...displayed].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -95,8 +100,31 @@ export default async function AdminDashboardPage({
             ))}
           </div>
 
+          {/* Sortering */}
+          <div className="flex gap-2 flex-wrap">
+            {[
+              { key: 'newest',     label: 'Nyeste' },
+              { key: 'oldest',     label: 'Eldste' },
+              { key: 'price-high', label: 'Pris ↓' },
+              { key: 'price-low',  label: 'Pris ↑' },
+            ].map(s => (
+              <Link
+                key={s.key}
+                href={`/admin/dashboard?filter=${filter}&sort=${s.key}${q ? `&q=${encodeURIComponent(q)}` : ''}`}
+                className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                  sort === s.key
+                    ? 'bg-slate-900 text-white'
+                    : 'bg-white border border-slate-200 text-slate-500 hover:bg-slate-50'
+                }`}
+              >
+                {s.label}
+              </Link>
+            ))}
+          </div>
+
           <form method="GET" action="/admin/dashboard" className="flex gap-2 max-w-md">
             <input type="hidden" name="filter" value={filter} />
+            <input type="hidden" name="sort" value={sort} />
             <input
               name="q"
               defaultValue={q}

@@ -49,7 +49,7 @@ export default function LoginPage() {
     <div className="min-h-[calc(100vh-56px)] bg-slate-50 flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <Link href="/" className="inline-block text-2xl font-bold text-slate-900 mb-2">Micro-fix</Link>
+          <Link href="/" className="inline-block text-2xl font-bold text-slate-900 mb-2">CodeMedic</Link>
           <p className="text-slate-500 text-sm">
             {mode === 'login' ? 'Logg inn på din konto' : 'Opprett en ny konto'}
           </p>

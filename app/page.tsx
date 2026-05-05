@@ -3,7 +3,7 @@ import { createServerSupabase } from './lib/supabaseServer';
 import { categories, packages } from './lib/fixOptions';
 
 export const metadata = {
-  title: 'Micro-fix — Premium WordPress og web-hjelp fra norsk utvikler',
+  title: 'CodeMedic — Premium WordPress og web-hjelp fra norsk utvikler',
   description: 'Få profesjonell hjelp med WordPress-feil, WooCommerce, hastighet og CSS. Du betaler kun etter godkjent levering. Fast pris, rask leveranse.',
 };
 
@@ -11,7 +11,7 @@ const testimonials = [
   {
     name: 'Kristine H.',
     role: 'Eier, nettbutikk',
-    text: 'WooCommerce-checkout fungerte ikke og jeg mistet salg. Micro-fix løste det på noen timer. Helt supert!',
+    text: 'WooCommerce-checkout fungerte ikke og jeg mistet salg. CodeMedic løste det på noen timer. Helt supert!',
     stars: 5,
   },
   {
@@ -37,9 +37,9 @@ export default async function HomePage() {
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Service',
-    name: 'Micro-fix',
+    name: 'CodeMedic',
     description: 'Premium norsk WordPress og web-hjelp med fast pris og no-cure-no-pay garanti.',
-    provider: { '@type': 'Person', name: 'Micro-fix', url: process.env.NEXT_PUBLIC_BASE_URL },
+    provider: { '@type': 'Person', name: 'CodeMedic', url: process.env.NEXT_PUBLIC_BASE_URL },
     areaServed: { '@type': 'Country', name: 'Norway' },
     offers: packages.map(p => ({
       '@type': 'Offer',
@@ -58,12 +58,12 @@ export default async function HomePage() {
         <div className="rounded-[3rem] bg-white p-10 shadow-[0_40px_120px_rgba(15,23,42,0.08)]">
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
             <div>
-              <p className="text-sm uppercase tracking-[0.35em] text-slate-500">Micro-fix</p>
+              <p className="text-sm uppercase tracking-[0.35em] text-slate-500">CodeMedic</p>
               <h1 className="mt-4 max-w-2xl text-5xl font-semibold leading-tight text-slate-900">
                 Premium, norsk teknisk hjelp for WordPress, nettbutikk og web-feil.
               </h1>
               <p className="mt-6 max-w-xl text-lg text-slate-600">
-                Micro-fix gjør teknisk webhjelp like enkelt som å bestille en tjeneste i en nettbutikk. Velg pakke — Vi godkjenner forespørselen og starter arbeidet, og du betaler først når jobben er fullført som avtalt.
+                CodeMedic gjør teknisk webhjelp like enkelt som å bestille en tjeneste i en nettbutikk. Velg pakke — Vi godkjenner forespørselen og starter arbeidet, og du betaler først når jobben er fullført som avtalt.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <Link href={user ? '/fix/new' : '/login'} className="rounded-full bg-slate-900 px-6 py-3 text-white shadow hover:bg-slate-800">
@@ -91,7 +91,7 @@ export default async function HomePage() {
         </div>
 
         <section className="mt-16">
-          <h2 className="text-3xl font-bold">Fokuserte Micro-fix tjenester</h2>
+          <h2 className="text-3xl font-bold">Fokuserte CodeMedic tjenester</h2>
           <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
             {categories.map(category => (
               <div key={category.id} className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
@@ -191,7 +191,7 @@ export default async function HomePage() {
 
         <section className="mt-16">
           <div className="rounded-[2rem] border border-slate-200 bg-gradient-to-br from-blue-50 to-indigo-50 p-8 shadow-sm">
-            <h2 className="text-3xl font-bold text-slate-900 mb-6">Hvorfor velge Micro-fix?</h2>
+            <h2 className="text-3xl font-bold text-slate-900 mb-6">Hvorfor velge CodeMedic?</h2>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               <div className="text-center">
                 <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -222,7 +222,7 @@ export default async function HomePage() {
           <div className="rounded-[2rem] border border-blue-200 bg-blue-50 p-8 text-slate-900 shadow-sm">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-sm uppercase tracking-[0.3em] text-blue-700">Micro-fix garanti</p>
+                <p className="text-sm uppercase tracking-[0.3em] text-blue-700">CodeMedic garanti</p>
                 <p className="mt-3 text-2xl font-semibold">Du betaler først når jobben er godkjent.</p>
               </div>
               <div className="rounded-full border border-blue-700 bg-white px-5 py-3 text-blue-700">Trygt for deg. Kontrollert for meg.</div>

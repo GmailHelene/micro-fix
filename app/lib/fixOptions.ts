@@ -46,7 +46,7 @@ export const categories = [
 export const packages = [
   {
     id: 'basic',
-    name: 'Micro-fix Basic',
+    name: 'CodeMedic Basic',
     description: 'Én konkret feilretting. Passer for enkle justeringer og klare feil.',
     features: ['Én konkret feilretting', '20–30 min arbeid', 'Levering innen 24–48 timer', 'Kort oppsummering etterpå'],
     price: 490,
@@ -55,7 +55,7 @@ export const packages = [
   },
   {
     id: 'standard',
-    name: 'Micro-fix Standard',
+    name: 'CodeMedic Standard',
     description: 'Større feil, CSS/JS, WooCommerce eller mobilretting.',
     features: ['Én til to feilrettinger', '45–60 min arbeid', 'CSS, JS, WooCommerce', 'Levering innen 24–48 timer', 'Oppsummering av hva som ble gjort'],
     price: 890,
@@ -64,7 +64,7 @@ export const packages = [
   },
   {
     id: 'premium',
-    name: 'Micro-fix Premium',
+    name: 'CodeMedic Premium',
     description: 'Kompleks feil eller flere elementer som henger sammen.',
     features: ['Opptil tre feilrettinger', '1–2 timer arbeid', 'Prioritert behandling', 'Levering innen 24 timer', 'Detaljert oppsummering'],
     price: 1490,
@@ -73,7 +73,7 @@ export const packages = [
   },
   {
     id: 'express',
-    name: 'Micro-fix Express',
+    name: 'CodeMedic Express',
     description: 'Haster? Samme dag levering for kritiske feil.',
     features: ['Prioritert kø', '30–45 min arbeid', 'Levering samme dag', 'Direkte oppfølging'],
     price: 1290,

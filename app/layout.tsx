@@ -14,12 +14,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Micro-fix - Premium teknisk hjelp for WordPress og nettbutikk",
+  title: "CodeMedic - Premium teknisk hjelp for WordPress og nettbutikk",
   description: "Få profesjonell teknisk hjelp for WordPress, WooCommerce og web-feil. Faste priser, rask levering og betal først når jobben er godkjent.",
   keywords: "WordPress hjelp, WooCommerce feil, teknisk support, webutvikling, nettbutikk fikser",
-  authors: [{ name: "Micro-fix" }],
+  authors: [{ name: "CodeMedic" }],
   openGraph: {
-    title: "Micro-fix - Premium teknisk hjelp",
+    title: "CodeMedic - Premium teknisk hjelp",
     description: "Profesjonell teknisk hjelp for WordPress og nettbutikk-feil. Betal først når jobben er godkjent.",
     type: "website",
   },

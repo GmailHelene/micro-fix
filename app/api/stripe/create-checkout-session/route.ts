@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
   const stripe = getStripe();
 
   const session = await stripe.checkout.sessions.create({
-    payment_method_types: ['card'],
+    payment_method_types: ['card', 'klarna'],
     mode: 'payment',
     customer_email: user.email || undefined,
     line_items: [
@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
           currency: 'nok',
           product_data: {
             name: fix.title,
-            description: 'Betaling for Micro-fix oppdrag',
+            description: 'Betaling for CodeMedic oppdrag',
           },
           unit_amount: Math.round((fix.price || 0) * 100),
         },
