@@ -1,6 +1,10 @@
 import { createServerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 
+// Bypasser Next.js data-cache på alle Supabase-kall
+const noStoreFetch = (url: RequestInfo | URL, init?: RequestInit) =>
+  fetch(url, { ...init, cache: 'no-store' });
+
 export const createServerSupabase = async () => {
   const cookieStore = await cookies();
   return createServerClient(
@@ -12,6 +16,7 @@ export const createServerSupabase = async () => {
           return cookieStore.get(name)?.value;
         },
       },
+      global: { fetch: noStoreFetch },
     }
   );
 };
@@ -27,6 +32,7 @@ export const createServiceSupabase = async () => {
           return cookieStore.get(name)?.value;
         },
       },
+      global: { fetch: noStoreFetch },
     }
   );
 };

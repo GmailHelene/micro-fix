@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { statusLabels, statusColors } from '../lib/fixOptions';
 
+export const dynamic = 'force-dynamic';
+
 const steps = [
   { key: 'pending_approval', label: 'Sendt inn' },
   { key: 'awaiting_payment', label: 'Godkjent' },

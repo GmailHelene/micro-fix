@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation';
 import { createServiceSupabase } from '../../lib/supabaseServer';
 import { statusLabels, statusColors } from '../../lib/fixOptions';
 
+export const dynamic = 'force-dynamic';
+
 const filterOptions = [
   { key: 'all',               label: 'Alle' },
   { key: 'pending_approval',  label: 'Venter godkjenning' },
