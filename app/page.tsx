@@ -98,9 +98,10 @@ export default async function HomePage() {
           <h2 className="text-3xl font-bold">Fokuserte CodeMedic tjenester</h2>
           <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
             {categories.map(category => (
-              <div key={category.id} className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
-                <h3 className="text-xl font-semibold text-slate-900">{category.name}</h3>
-                <p className="mt-3 text-slate-600">{category.description}</p>
+              <div key={category.id} className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm hover:shadow-md transition-shadow">
+                <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-2xl mb-4">{category.icon}</div>
+                <h3 className="text-lg font-semibold text-slate-900">{category.name}</h3>
+                <p className="mt-2 text-slate-600 text-sm">{category.description}</p>
               </div>
             ))}
           </div>

@@ -96,7 +96,7 @@ export default function NewFixPage() {
           </div>
           <h1 className="text-2xl font-bold text-slate-900 mb-3">Forespørsel mottatt!</h1>
           <p className="text-slate-600 mb-2">
-            Takk for at du valgte Micro-fix. Forespørselen din er sendt inn og vil bli gjennomgått innen kort tid.
+            Takk for at du valgte CodeMedic. Forespørselen din er sendt inn og vil bli gjennomgått innen kort tid.
           </p>
           <div className="rounded-2xl bg-white border border-slate-200 p-6 mt-6 text-left shadow-sm">
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4">Hva skjer nå?</p>
@@ -335,7 +335,7 @@ export default function NewFixPage() {
 
             {/* Garanti */}
             <div className="rounded-3xl bg-blue-50 border border-blue-200 p-5">
-              <p className="text-xs font-semibold text-blue-700 uppercase tracking-wider mb-2">Micro-fix garanti</p>
+              <p className="text-xs font-semibold text-blue-700 uppercase tracking-wider mb-2">CodeMedic garanti</p>
               <p className="text-sm text-slate-700">Du betaler først når jobben er godkjent og du er fornøyd. Full refusjon hvis vi ikke kan løse problemet.</p>
             </div>
 
