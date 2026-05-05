@@ -406,6 +406,68 @@ export default async function HomePage() {
             </div>
           </section>
 
+          {/* ── NETTSIDER & NETTBUTIKKER ── */}
+          <section>
+            <div className="rounded-[2.5rem] overflow-hidden border border-slate-200 shadow-sm">
+              <div className="grid lg:grid-cols-2">
+                {/* Venstre — tekst */}
+                <div className="bg-white p-10 md:p-12 flex flex-col justify-center">
+                  <p className="text-xs uppercase tracking-[0.3em] text-blue-500 font-semibold mb-3">Mer enn reparasjoner</p>
+                  <h2 className="text-3xl font-bold text-slate-900 leading-tight mb-4">
+                    Trenger du en ny nettside eller nettbutikk?
+                  </h2>
+                  <p className="text-slate-500 leading-relaxed mb-5">
+                    Vi bygger profesjonelle WordPress-nettsider og WooCommerce-nettbutikker fra bunnen av —
+                    skreddersydd til deg, med ryddig kode og godt design. Du får en løsning som er rask,
+                    mobiloptimert og enkel å administrere selv.
+                  </p>
+                  <ul className="space-y-2 mb-7">
+                    {[
+                      ['🏗️', 'WordPress og WooCommerce', 'Bransjens mest fleksible plattform'],
+                      ['📱', 'Mobiloptimert fra start', 'Ser bra ut på alle skjermstørrelser'],
+                      ['⚡', 'Rask og SEO-vennlig', 'Riktig teknisk fundament fra dag én'],
+                      ['🎓', 'Opplæring inkludert', 'Du kan enkelt oppdatere siden selv'],
+                    ].map(([icon, title, sub]) => (
+                      <li key={title} className="flex items-start gap-3">
+                        <span className="text-lg shrink-0 mt-0.5">{icon}</span>
+                        <div>
+                          <span className="text-sm font-semibold text-slate-800">{title}</span>
+                          <span className="text-sm text-slate-500"> — {sub}</span>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                  <a
+                    href="mailto:support@codemedic.no?subject=Forespørsel om ny nettside/nettbutikk"
+                    className="inline-flex items-center gap-2 rounded-full bg-blue-600 text-white px-7 py-3.5 text-sm font-bold hover:bg-blue-700 transition-colors shadow-sm self-start"
+                  >
+                    Ta kontakt for et uforpliktende tilbud →
+                  </a>
+                </div>
+
+                {/* Høyre — visuell boks */}
+                <div className="bg-gradient-to-br from-blue-600 to-blue-800 p-10 md:p-12 flex flex-col justify-center text-white">
+                  <p className="text-blue-200 text-xs uppercase tracking-widest font-semibold mb-6">Vi leverer</p>
+                  <div className="space-y-4">
+                    {[
+                      { label: 'Presentasjonsnettsider', desc: 'For bedrifter, frilansere og fagpersoner som vil fremstå profesjonelt på nett.' },
+                      { label: 'WooCommerce-nettbutikker', desc: 'Komplett netthandel med produkter, betalingsløsning og ordrehåndtering.' },
+                      { label: 'Landingssider', desc: 'Konverteringsfokuserte sider for kampanjer, produktlanseringer og leads.' },
+                    ].map(item => (
+                      <div key={item.label} className="rounded-2xl bg-white/10 border border-white/10 p-4">
+                        <p className="font-semibold text-white text-sm mb-1">{item.label}</p>
+                        <p className="text-blue-100 text-xs leading-relaxed">{item.desc}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-blue-200 text-xs mt-6 leading-relaxed">
+                    Alle prosjekter starter med en gratis samtale der vi kartlegger behovene dine. Ingen binding — bare en ærlig vurdering.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+
           {/* ── CTA ── */}
           <section>
             <div className="rounded-[2.5rem] bg-slate-900 text-white p-10 md:p-14 text-center shadow-[0_32px_80px_rgba(15,23,42,0.25)]">
