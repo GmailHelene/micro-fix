@@ -45,14 +45,35 @@ export async function PUT(
     updates.status = body.status;
     if (body.status === 'awaiting_payment') updates.payment_status = 'unpaid';
     if (body.status === 'completed') updates.access_info = null;
+    // Custom offer: set new price + explanation
+    if (body.status === 'awaiting_offer_approval') {
+      if (body.price !== undefined)      updates.price = body.price;
+      if (body.admin_note !== undefined) updates.admin_note = body.admin_note;
+    }
   }
-  if (body.admin_note !== undefined)          updates.admin_note = body.admin_note;
-  if (body.price !== undefined)               updates.price = body.price;
+  if (body.admin_note !== undefined && body.status === undefined)  updates.admin_note = body.admin_note;
+  if (body.price !== undefined && body.status !== 'awaiting_offer_approval') updates.price = body.price;
   if (body.custom_payment_url !== undefined)  updates.custom_payment_url = body.custom_payment_url;
   // Admin kan manuelt bekrefte betaling (brukt ved custom payment links)
   if (body.payment_status !== undefined)      updates.payment_status = body.payment_status;
 
-  const { data: fixBefore } = await supabase.from('fix_requests').select('title, user_id').eq('id', id).single();
+  const { data: fixBefore } = await supabase
+    .from('fix_requests').select('title, user_id, price, payment_intent_id').eq('id', id).single();
+
+  // Capture betaling når jobben markeres fullført
+  if (body.status === 'completed' && fixBefore?.payment_intent_id) {
+    const secretKey = process.env.STRIPE_SECRET_KEY;
+    if (secretKey) {
+      const stripe = new Stripe(secretKey, { apiVersion: '2026-04-22.dahlia' });
+      try {
+        await stripe.paymentIntents.capture(fixBefore.payment_intent_id);
+        updates.payment_status = 'paid';
+      } catch {
+        // Capture feilet (f.eks. utløpt) — admin må håndtere manuelt
+        updates.payment_status = 'capture_failed';
+      }
+    }
+  }
 
   const { error } = await supabase.from('fix_requests').update(updates).eq('id', id);
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
@@ -62,12 +83,16 @@ export async function PUT(
     const { data: profile } = await supabase.auth.admin.getUserById(fixBefore.user_id);
     const email = profile?.user?.email;
     if (email) {
+      const priceForEmail = body.status === 'awaiting_offer_approval'
+        ? (body.price ?? fixBefore.price)
+        : undefined;
       await sendStatusEmail({
         to: email,
         fixTitle: fixBefore.title,
         fixId: id,
         status: body.status,
         adminNote: body.admin_note,
+        price: priceForEmail,
       }).catch(() => null);
     }
   }
@@ -103,6 +128,11 @@ export async function POST(
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ['card', 'klarna'],
     mode: 'payment',
+    // Reserver kortet — trekkes kun ved fullføring
+    payment_intent_data: {
+      capture_method: 'manual',
+      metadata: { request_id: fix.id, user_id: fix.user_id },
+    },
     line_items: [{
       price_data: {
         currency: 'nok',

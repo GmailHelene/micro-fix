@@ -35,6 +35,9 @@ export default function AdminFixDetailPage() {
   const [customPrice, setCustomPrice] = useState('');
   const [showNoteInput, setShowNoteInput] = useState(false);
   const [showPriceInput, setShowPriceInput] = useState(false);
+  const [showOfferInput, setShowOfferInput] = useState(false);
+  const [offerNote, setOfferNote] = useState('');
+  const [offerPrice, setOfferPrice] = useState('');
   const [sendingMsg, setSendingMsg] = useState(false);
   const [working, setWorking] = useState(false);
   const [stripeUrl, setStripeUrl] = useState<string | null>(null);
@@ -264,19 +267,84 @@ export default function AdminFixDetailPage() {
               <h3 className="text-sm font-semibold text-slate-900 mb-3">Handlinger</h3>
               <div className="space-y-2">
 
-                {/* Godkjenn */}
-                {fix.status === 'pending_approval' && (
+                {/* Godkjenn til standard pris */}
+                {['pending_approval', 'awaiting_offer_approval'].includes(fix.status) && (
                   <button
                     onClick={() => updateStatus('awaiting_payment')}
                     disabled={working}
                     className="w-full rounded-xl bg-emerald-600 text-white px-4 py-3 text-sm font-semibold hover:bg-emerald-700 disabled:opacity-40 transition-colors"
                   >
-                    ✓ Godkjenn forespørsel
+                    ✓ Godkjenn — standard pris
                   </button>
                 )}
 
+                {/* Send custom tilbud */}
+                {['pending_approval', 'awaiting_changes', 'awaiting_offer_approval'].includes(fix.status) && (
+                  <>
+                    <button
+                      onClick={() => setShowOfferInput(n => !n)}
+                      className="w-full rounded-xl border border-purple-200 bg-purple-50 text-purple-700 px-4 py-2.5 text-sm font-semibold hover:bg-purple-100 transition-colors"
+                    >
+                      💬 Send custom tilbud med ny pris
+                    </button>
+                    {showOfferInput && (
+                      <div className="space-y-2 rounded-xl border border-purple-200 bg-purple-50 p-3">
+                        <p className="text-xs text-purple-700 font-medium">Forklaring til kunden (vises i e-post og på siden):</p>
+                        <textarea
+                          value={offerNote}
+                          onChange={e => setOfferNote(e.target.value)}
+                          placeholder="F.eks: Vi har sett på saken og det viser seg å være mer omfattende enn en standard pakke. Jobben krever X og Y, og vi estimerer Y timer..."
+                          className="w-full rounded-xl border border-purple-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-purple-300"
+                          rows={4}
+                        />
+                        <div className="flex gap-2 items-center">
+                          <span className="text-xs text-purple-700 font-medium whitespace-nowrap">Ny pris (kr):</span>
+                          <input
+                            type="number"
+                            value={offerPrice}
+                            onChange={e => setOfferPrice(e.target.value)}
+                            placeholder="F.eks. 1200"
+                            className="flex-1 rounded-xl border border-purple-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-purple-300"
+                          />
+                        </div>
+                        <button
+                          onClick={async () => {
+                            const price = parseFloat(offerPrice);
+                            if (!offerNote.trim() || isNaN(price) || price <= 0) {
+                              showToast('Fyll inn forklaring og gyldig pris', 'err'); return;
+                            }
+                            setWorking(true);
+                            const res = await fetch(`/api/admin/fix/${id}`, {
+                              method: 'PUT',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({
+                                status: 'awaiting_offer_approval',
+                                admin_note: offerNote,
+                                price,
+                              }),
+                            });
+                            const data = await res.json();
+                            if (!data.error) {
+                              showToast('Custom tilbud sendt til kunde!');
+                              setShowOfferInput(false);
+                              setOfferNote('');
+                              setOfferPrice('');
+                              fetchFix();
+                            } else showToast(data.error, 'err');
+                            setWorking(false);
+                          }}
+                          disabled={working || !offerNote.trim() || !offerPrice}
+                          className="w-full rounded-xl bg-purple-700 text-white px-4 py-2.5 text-sm font-semibold disabled:opacity-40 hover:bg-purple-800 transition-colors"
+                        >
+                          Send tilbud til kunde →
+                        </button>
+                      </div>
+                    )}
+                  </>
+                )}
+
                 {/* Be om endringer */}
-                {['pending_approval', 'awaiting_changes'].includes(fix.status) && (
+                {['pending_approval', 'awaiting_changes', 'awaiting_offer_approval'].includes(fix.status) && (
                   <>
                     <button
                       onClick={() => setShowNoteInput(n => !n)}
@@ -306,7 +374,7 @@ export default function AdminFixDetailPage() {
                 )}
 
                 {/* Avvis */}
-                {['pending_approval', 'awaiting_changes'].includes(fix.status) && (
+                {['pending_approval', 'awaiting_changes', 'awaiting_offer_approval'].includes(fix.status) && (
                   <button
                     onClick={() => {
                       if (confirm('Er du sikker på at du vil avvise denne forespørselen?')) {
@@ -454,12 +522,26 @@ export default function AdminFixDetailPage() {
               <div className="space-y-2 text-xs">
                 <div className="flex justify-between"><span className="text-slate-500">Opprettet</span><span className="font-medium text-slate-700">{new Date(fix.created_at).toLocaleDateString('no-NO')}</span></div>
                 <div className="flex justify-between"><span className="text-slate-500">Betaling</span>
-                  <span className={`font-medium ${fix.payment_status === 'paid' ? 'text-emerald-600' : 'text-slate-700'}`}>{fix.payment_status ?? '—'}</span>
+                  <span className={`font-medium ${
+                    fix.payment_status === 'paid'           ? 'text-emerald-600' :
+                    fix.payment_status === 'authorized'     ? 'text-blue-600' :
+                    fix.payment_status === 'capture_failed' ? 'text-red-600' :
+                    'text-slate-700'}`}>
+                    {fix.payment_status === 'authorized'     ? 'Reservert' :
+                     fix.payment_status === 'capture_failed' ? '⚠️ Capture feilet' :
+                     fix.payment_status === 'paid'           ? 'Betalt' :
+                     (fix.payment_status ?? '—')}
+                  </span>
                 </div>
                 <div className="flex justify-between gap-2"><span className="text-slate-500 shrink-0">Bruker-ID</span>
                   <span className="font-mono text-slate-600 truncate">{fix.user_id.slice(0, 14)}…</span>
                 </div>
               </div>
+              {fix.payment_status === 'capture_failed' && (
+                <div className="mt-3 rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-xs text-red-700">
+                  <strong>Capture feilet</strong> — autorisasjonen er sannsynligvis utløpt (7 dager). Gå til Stripe-dashboardet og opprett ny betalingsforespørsel manuelt.
+                </div>
+              )}
             </div>
           </div>
         </div>

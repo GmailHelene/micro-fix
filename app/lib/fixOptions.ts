@@ -77,21 +77,23 @@ export const packages = [
 ];
 
 export const statusLabels: Record<string, string> = {
-  pending_approval:   'Avventer godkjenning',
-  awaiting_changes:   'Endringer ønsket',
-  awaiting_payment:   'Avventer betaling',
-  in_progress:        'Under arbeid',
-  completed:          'Fullført',
-  cancelled:          'Avbrutt',
+  pending_approval:          'Avventer godkjenning',
+  awaiting_changes:          'Endringer ønsket',
+  awaiting_offer_approval:   'Custom tilbud sendt',
+  awaiting_payment:          'Avventer betaling',
+  in_progress:               'Under arbeid',
+  completed:                 'Fullført',
+  cancelled:                 'Avbrutt',
 };
 
 export const statusColors: Record<string, { bg: string; text: string; dot: string }> = {
-  pending_approval:  { bg: 'bg-amber-50',   text: 'text-amber-700',   dot: 'bg-amber-400'  },
-  awaiting_changes:  { bg: 'bg-orange-50',  text: 'text-orange-700',  dot: 'bg-orange-400' },
-  awaiting_payment:  { bg: 'bg-blue-50',    text: 'text-blue-700',    dot: 'bg-blue-400'   },
-  in_progress:       { bg: 'bg-indigo-50',  text: 'text-indigo-700',  dot: 'bg-indigo-400' },
-  completed:         { bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-400'},
-  cancelled:         { bg: 'bg-slate-100',  text: 'text-slate-500',   dot: 'bg-slate-400'  },
+  pending_approval:         { bg: 'bg-amber-50',   text: 'text-amber-700',   dot: 'bg-amber-400'  },
+  awaiting_changes:         { bg: 'bg-orange-50',  text: 'text-orange-700',  dot: 'bg-orange-400' },
+  awaiting_offer_approval:  { bg: 'bg-purple-50',  text: 'text-purple-700',  dot: 'bg-purple-400' },
+  awaiting_payment:         { bg: 'bg-blue-50',    text: 'text-blue-700',    dot: 'bg-blue-400'   },
+  in_progress:              { bg: 'bg-indigo-50',  text: 'text-indigo-700',  dot: 'bg-indigo-400' },
+  completed:                { bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-400'},
+  cancelled:                { bg: 'bg-slate-100',  text: 'text-slate-500',   dot: 'bg-slate-400'  },
 };
 
 // Steg for fremdriftsindikator (kun "fremover"-statuser)

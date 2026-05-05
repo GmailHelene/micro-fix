@@ -63,7 +63,12 @@ const statusMessages: Record<string, { subject: string; heading: string; body: s
   awaiting_payment: {
     subject: '✅ Forespørselen din er godkjent — klar for betaling',
     heading: 'Jobben er godkjent!',
-    body: 'Vi har gjennomgått forespørselen din og er klare til å starte. Logg inn for å se pris og betale sikkert via Stripe.',
+    body: 'Vi har gjennomgått forespørselen din og er klare til å starte. Logg inn for å se pris og reservere betalingen sikkert via Stripe.',
+  },
+  awaiting_offer_approval: {
+    subject: '💬 Vi har sendt deg et custom tilbud',
+    heading: 'Custom tilbud fra CodeMedic',
+    body: 'Vi har vurdert forespørselen din og sendt deg et tilbud med tilpasset pris. Logg inn for å se tilbudet og velge om du vil godta eller avslå.',
   },
   awaiting_changes: {
     subject: '🔄 Vi trenger litt mer info fra deg',
@@ -93,12 +98,14 @@ export async function sendStatusEmail({
   fixId,
   status,
   adminNote,
+  price,
 }: {
   to: string;
   fixTitle: string;
   fixId: string;
   status: string;
   adminNote?: string;
+  price?: number;
 }) {
   if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) return;
 
@@ -110,7 +117,16 @@ export async function sendStatusEmail({
   const base = process.env.NEXT_PUBLIC_BASE_URL || 'https://codemedic.no';
   const from = process.env.EMAIL_FROM ?? process.env.SMTP_USER;
 
-  const noteHtml = adminNote
+  // For custom offer: show explanation + price prominently
+  const offerHtml = status === 'awaiting_offer_approval'
+    ? `<div style="background:#f5f3ff;border:1px solid #c4b5fd;border-radius:8px;padding:16px;margin:16px 0">
+        ${adminNote ? `<p style="font-size:14px;color:#4c1d95;margin:0 0 12px"><strong>Fra CodeMedic:</strong><br/>${adminNote}</p>` : ''}
+        ${price ? `<p style="font-size:24px;font-weight:700;color:#4c1d95;margin:0">Tilbudspris: ${price} kr</p>` : ''}
+        <p style="font-size:12px;color:#7c3aed;margin:8px 0 0">Logg inn for å godta eller avslå tilbudet.</p>
+      </div>`
+    : '';
+
+  const noteHtml = adminNote && status !== 'awaiting_offer_approval'
     ? `<div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:12px 16px;margin:16px 0;font-size:14px;color:#9a3412"><strong>Melding fra CodeMedic:</strong><br/>${adminNote}</div>`
     : '';
 
@@ -125,6 +141,7 @@ export async function sendStatusEmail({
         <p style="font-size:14px;color:#475569;margin:0 0 4px">Oppdrag: <strong>${fixTitle}</strong></p>
         <p style="font-size:14px;color:#94a3b8;margin:0 0 20px">Saksnr. #${fixId.slice(0, 8).toUpperCase()}</p>
         <p style="font-size:15px;color:#334155;line-height:1.6">${msg.body}</p>
+        ${offerHtml}
         ${noteHtml}
         <a href="${base}/fix/${fixId}" style="display:inline-block;margin-top:24px;background:#0f172a;color:#fff;text-decoration:none;padding:12px 24px;border-radius:9999px;font-size:14px;font-weight:600">Se detaljer →</a>
         <hr style="border:none;border-top:1px solid #e2e8f0;margin:32px 0"/>

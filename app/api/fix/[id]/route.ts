@@ -47,6 +47,17 @@ export async function PUT(
   if (body.description !== undefined) allowed.description = body.description;
   if (body.access_info !== undefined) allowed.access_info = body.access_info;
 
+  // Kunde godtar eller avslår custom tilbud
+  if (body.accept_offer === true || body.decline_offer === true) {
+    const { data: current } = await supabase
+      .from('fix_requests').select('status').eq('id', id).eq('user_id', user.id).single();
+    if (current?.status === 'awaiting_offer_approval') {
+      allowed.status = body.accept_offer ? 'awaiting_payment' : 'cancelled';
+    } else {
+      return NextResponse.json({ error: 'Ingen aktiv tilbudsforespørsel' }, { status: 400 });
+    }
+  }
+
   const { error } = await supabase
     .from('fix_requests')
     .update({ ...allowed, updated_at: new Date().toISOString() })

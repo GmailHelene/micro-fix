@@ -37,11 +37,17 @@ export async function POST(req: Request) {
     if (requestId) {
       const supabase = getSupabase();
 
-      // Oppdater status
+      // Lagre payment_intent_id for capture ved fullføring
+      const paymentIntentId = typeof session.payment_intent === 'string'
+        ? session.payment_intent
+        : session.payment_intent?.id ?? null;
+
+      // Sett status til in_progress og payment_status til 'authorized' (reservert, ikke trukket)
       await supabase
         .from('fix_requests')
         .update({
-          payment_status: 'paid',
+          payment_status: 'authorized',
+          payment_intent_id: paymentIntentId,
           status: 'in_progress',
           updated_at: new Date().toISOString(),
         })

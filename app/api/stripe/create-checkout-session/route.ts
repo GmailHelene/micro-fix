@@ -60,6 +60,11 @@ export async function POST(req: NextRequest) {
     payment_method_types: ['card', 'klarna'],
     mode: 'payment',
     customer_email: user.email || undefined,
+    // Reserver kortet — trekkes kun når jobben er fullført (capture_method: manual)
+    payment_intent_data: {
+      capture_method: 'manual',
+      metadata: { request_id: fix.id, user_id: user.id },
+    },
     line_items: [
       priceId
         ? { price: priceId, quantity: 1 }

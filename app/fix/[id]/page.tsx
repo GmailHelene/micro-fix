@@ -27,7 +27,12 @@ interface Message {
 }
 
 function StatusProgress({ status }: { status: string }) {
-  const activeIdx = progressSteps.findIndex(s => s.key === status);
+  // Map special statuses to nearest progress step for the bar
+  const barStatus = status === 'awaiting_offer_approval' ? 'pending_approval'
+    : status === 'awaiting_changes' ? 'pending_approval'
+    : status;
+  const activeIdx = progressSteps.findIndex(s => s.key === barStatus);
+
   if (status === 'cancelled') {
     return <div className="mt-4 text-xs text-slate-400 italic">Forespørselen ble avbrutt.</div>;
   }
@@ -35,6 +40,13 @@ function StatusProgress({ status }: { status: string }) {
     return (
       <div className="mt-4 rounded-xl bg-orange-50 border border-orange-200 px-4 py-2.5 text-sm text-orange-700 font-medium">
         Endringer ønsket — se melding fra CodeMedic nedenfor og oppdater forespørselen.
+      </div>
+    );
+  }
+  if (status === 'awaiting_offer_approval') {
+    return (
+      <div className="mt-4 rounded-xl bg-purple-50 border border-purple-200 px-4 py-2.5 text-sm text-purple-700 font-medium">
+        Custom tilbud sendt — se tilbudet nedenfor og godta eller avslå.
       </div>
     );
   }
@@ -77,6 +89,7 @@ function FixDetailContent() {
   const [loading, setLoading] = useState(true);
   const [paying, setPaying] = useState(false);
   const [sendingMsg, setSendingMsg] = useState(false);
+  const [respondingOffer, setRespondingOffer] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
   const showToast = (msg: string) => {
@@ -137,6 +150,22 @@ function FixDetailContent() {
     setSendingMsg(false);
   };
 
+  const handleOfferResponse = async (accept: boolean) => {
+    setRespondingOffer(true);
+    const res = await fetch(`/api/fix/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(accept ? { accept_offer: true } : { decline_offer: true }),
+    });
+    if (res.ok) {
+      showToast(accept ? 'Tilbud godtatt! Du kan nå betale.' : 'Tilbud avslått.');
+      fetchFix();
+    } else {
+      showToast('Noe gikk galt. Prøv igjen.');
+    }
+    setRespondingOffer(false);
+  };
+
   const handleSaveAccessInfo = async () => {
     setSavingAccess(true);
     const res = await fetch(`/api/fix/${id}`, {
@@ -162,7 +191,18 @@ function FixDetailContent() {
 
   const sc = statusColors[fix.status] ?? statusColors.pending_approval;
   const needsPayment = fix.status === 'awaiting_payment' && fix.payment_status === 'unpaid';
+  const hasOffer = fix.status === 'awaiting_offer_approval';
   const showAccessSection = ['awaiting_payment', 'in_progress', 'completed'].includes(fix.status);
+
+  const paymentStatusLabel =
+    fix.payment_status === 'paid'       ? 'Betalt' :
+    fix.payment_status === 'authorized' ? 'Reservert (trekkes ved fullføring)' :
+    fix.payment_status === 'unpaid'     ? 'Ikke betalt' :
+    (fix.payment_status ?? '—');
+  const paymentStatusColor =
+    fix.payment_status === 'paid'       ? 'text-emerald-600' :
+    fix.payment_status === 'authorized' ? 'text-blue-600' :
+    'text-slate-800';
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -200,6 +240,41 @@ function FixDetailContent() {
             <p className="text-xs font-semibold text-orange-700 uppercase tracking-wider mb-2">CodeMedic ber om endringer</p>
             <p className="text-sm text-orange-900">{fix.admin_note}</p>
             <p className="text-xs text-orange-600 mt-2">Svar via meldingsfeltet nedenfor eller oppdater forespørselen din.</p>
+          </div>
+        )}
+
+        {/* Custom tilbud — kunde godkjenner eller avslår */}
+        {hasOffer && (
+          <div className="rounded-2xl bg-purple-50 border border-purple-200 p-6 mb-6 shadow-sm">
+            <p className="text-xs font-semibold text-purple-700 uppercase tracking-wider mb-3">💬 Custom tilbud fra CodeMedic</p>
+            {fix.admin_note && (
+              <p className="text-sm text-purple-900 mb-4 leading-relaxed">{fix.admin_note}</p>
+            )}
+            {fix.price != null && (
+              <div className="rounded-xl bg-white border border-purple-200 px-4 py-3 mb-4 inline-block">
+                <span className="text-xs text-purple-500 block mb-0.5">Tilbudspris</span>
+                <span className="text-2xl font-bold text-purple-700">{fix.price} kr</span>
+              </div>
+            )}
+            <p className="text-xs text-purple-600 mb-4">
+              Kortet reserveres nå og trekkes først når jobben er fullført og godkjent av deg.
+            </p>
+            <div className="flex gap-3 flex-wrap">
+              <button
+                onClick={() => handleOfferResponse(true)}
+                disabled={respondingOffer}
+                className="rounded-full bg-purple-700 text-white px-6 py-2.5 text-sm font-bold hover:bg-purple-800 disabled:opacity-50 transition-colors"
+              >
+                {respondingOffer ? 'Venter...' : '✓ Godta tilbud'}
+              </button>
+              <button
+                onClick={() => handleOfferResponse(false)}
+                disabled={respondingOffer}
+                className="rounded-full border border-purple-300 text-purple-700 px-6 py-2.5 text-sm font-semibold hover:bg-purple-100 disabled:opacity-50 transition-colors"
+              >
+                ✕ Avslå tilbud
+              </button>
+            </div>
           </div>
         )}
 
@@ -324,10 +399,10 @@ function FixDetailContent() {
                 {fix.estimated_time && (
                   <div className="flex justify-between"><span className="text-slate-500">Tid</span><span className="font-medium text-slate-800">{fix.estimated_time}</span></div>
                 )}
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Betaling</span>
-                  <span className={`font-medium ${fix.payment_status === 'paid' ? 'text-emerald-600' : 'text-slate-800'}`}>
-                    {fix.payment_status === 'paid' ? 'Betalt' : fix.payment_status ?? 'Ikke betalt'}
+                <div className="flex justify-between gap-2">
+                  <span className="text-slate-500 shrink-0">Betaling</span>
+                  <span className={`font-medium text-right text-xs leading-tight ${paymentStatusColor}`}>
+                    {paymentStatusLabel}
                   </span>
                 </div>
                 <div className="flex justify-between">
@@ -339,7 +414,7 @@ function FixDetailContent() {
 
             <div className="rounded-3xl bg-slate-50 border border-slate-200 p-5">
               <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Garanti</p>
-              <p className="text-sm text-slate-600">Du betaler kun etter godkjenning. Full refusjon hvis problemet ikke løses.</p>
+              <p className="text-sm text-slate-600">Kortet reserveres, men trekkes <strong>kun</strong> når jobben er ferdig og godkjent. Full refusjon hvis vi ikke løser problemet.</p>
             </div>
           </div>
         </div>
