@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { ArrowLeft, Check, ArrowRight } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Personvernpolicy — CodeMedic',
@@ -12,7 +13,7 @@ export default function PersonvernPage() {
       <div className="max-w-2xl mx-auto px-4 py-16">
 
         <Link href="/" className="text-sm text-slate-500 hover:text-slate-800 inline-flex items-center gap-1 mb-8">
-          ← Tilbake til forsiden
+          <ArrowLeft className="w-4 h-4" /> Tilbake til forsiden
         </Link>
 
         <h1 className="text-3xl font-bold text-slate-900 mb-2">Personvernpolicy</h1>
@@ -100,7 +101,7 @@ export default function PersonvernPage() {
                 ['Betalingsreferanser', 'Lagres i 5 år i henhold til bokføringsloven.'],
               ].map(([item, desc]) => (
                 <div key={item} className="flex gap-3 text-slate-600">
-                  <span className="text-emerald-500 font-bold shrink-0 mt-0.5">✓</span>
+                  <Check className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
                   <span><strong className="text-slate-800">{item}:</strong> {desc}</span>
                 </div>
               ))}
@@ -154,8 +155,8 @@ export default function PersonvernPage() {
           <div className="rounded-2xl bg-slate-900 text-white p-6 mt-10">
             <p className="font-semibold mb-1">Spørsmål om personvern?</p>
             <p className="text-sm text-slate-300 mb-3">Vi svarer gjerne innen én virkedag.</p>
-            <a href="mailto:hei@codemedic.no" className="inline-block rounded-full bg-white text-slate-900 px-5 py-2 text-sm font-semibold hover:bg-slate-100 transition-colors">
-              Kontakt oss →
+            <a href="mailto:hei@codemedic.no" className="inline-flex items-center gap-1.5 rounded-full bg-white text-slate-900 px-5 py-2 text-sm font-semibold hover:bg-slate-100 transition-colors">
+              Kontakt oss <ArrowRight className="w-4 h-4" />
             </a>
           </div>
 

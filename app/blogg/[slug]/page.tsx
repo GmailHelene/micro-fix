@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { articles, getArticleBySlug, type ArticleSection } from '../../lib/articles';
+import { Lightbulb, AlertTriangle, ArrowLeft, ArrowRight, Check } from 'lucide-react';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -62,7 +63,7 @@ function renderSection(section: ArticleSection, index: number) {
         <ul key={index} className="space-y-2 mb-5">
           {section.items.map((item, i) => (
             <li key={i} className="flex items-start gap-2 text-slate-700">
-              <span className="text-emerald-500 font-bold mt-0.5 shrink-0">✓</span>
+              <Check className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
               <span className="leading-relaxed">{item}</span>
             </li>
           ))}
@@ -84,14 +85,14 @@ function renderSection(section: ArticleSection, index: number) {
     case 'tip':
       return (
         <div key={index} className="rounded-xl bg-blue-50 border border-blue-200 px-5 py-4 mb-5 flex gap-3">
-          <span className="text-xl shrink-0">💡</span>
+          <Lightbulb className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
           <p className="text-blue-800 text-sm leading-relaxed">{section.text}</p>
         </div>
       );
     case 'warning':
       return (
         <div key={index} className="rounded-xl bg-amber-50 border border-amber-200 px-5 py-4 mb-5 flex gap-3">
-          <span className="text-xl shrink-0">⚠️</span>
+          <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
           <p className="text-amber-800 text-sm leading-relaxed">{section.text}</p>
         </div>
       );
@@ -113,9 +114,9 @@ function renderSection(section: ArticleSection, index: number) {
           </p>
           <Link
             href="/fix/new"
-            className="inline-block rounded-full bg-white text-slate-900 px-7 py-3 text-sm font-bold hover:bg-slate-100 transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-full bg-white text-slate-900 px-7 py-3 text-sm font-bold hover:bg-slate-100 transition-colors"
           >
-            Send forespørsel →
+            Send forespørsel <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
       );
@@ -205,7 +206,7 @@ export default async function ArticlePage({ params }: Props) {
               href="/blogg"
               className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700 transition-colors"
             >
-              ← Tilbake til blogg
+              <ArrowLeft className="w-4 h-4" /> Tilbake til blogg
             </Link>
           </div>
 

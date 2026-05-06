@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { articles } from '../lib/articles';
+import { ArrowRight } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Blogg — WordPress-tips og feilsøkingsguider | CodeMedic',
@@ -69,9 +70,9 @@ export default function BloggPage() {
                   </span>
                   <Link
                     href={`/blogg/${article.slug}`}
-                    className="text-sm font-semibold text-slate-700 hover:text-slate-900 transition-colors"
+                    className="inline-flex items-center gap-1 text-sm font-semibold text-slate-700 hover:text-slate-900 transition-colors"
                   >
-                    Les mer →
+                    Les mer <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
                 </div>
               </div>
@@ -87,9 +88,9 @@ export default function BloggPage() {
           </p>
           <Link
             href="/fix/new"
-            className="inline-block rounded-full bg-white text-slate-900 px-7 py-3 text-sm font-bold hover:bg-slate-100 transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-full bg-white text-slate-900 px-7 py-3 text-sm font-bold hover:bg-slate-100 transition-colors"
           >
-            Send forespørsel →
+            Send forespørsel <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
 

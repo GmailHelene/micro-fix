@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { statusLabels, statusColors, progressSteps } from '@/app/lib/fixOptions';
+import { Check, ArrowLeft, RefreshCw, Key, AlertTriangle, Star } from 'lucide-react';
 
 interface Fix {
   id: string;
@@ -63,7 +64,7 @@ function StatusProgress({ status }: { status: string }) {
               <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border-2 transition-all
                 ${done ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-200 text-slate-400'}
                 ${active ? 'ring-4 ring-slate-200' : ''}`}>
-                {done && !active ? '✓' : i + 1}
+                {done && !active ? <Check className="w-3.5 h-3.5" /> : i + 1}
               </div>
               <span className={`mt-1 text-[10px] font-medium whitespace-nowrap ${done ? 'text-slate-700' : 'text-slate-400'}`}>
                 {s.label}
@@ -218,7 +219,7 @@ function FixDetailContent() {
     setSubmittingFeedback(false);
     if (res.ok) {
       setFeedbackDone(true);
-      showToast('Takk for tilbakemeldingen! 🙏');
+      showToast('Takk for tilbakemeldingen!');
       fetchFix();
     } else {
       showToast('Noe gikk galt. Prøv igjen.');
@@ -243,7 +244,7 @@ function FixDetailContent() {
     <div className="min-h-screen bg-slate-50 flex items-center justify-center">
       <div className="text-center">
         <p className="text-slate-500 mb-4">Forespørsel ikke funnet.</p>
-        <button onClick={() => router.push('/dashboard')} className="text-blue-600 text-sm hover:underline">← Mine forespørsler</button>
+        <button onClick={() => router.push('/dashboard')} className="text-blue-600 text-sm hover:underline inline-flex items-center gap-1"><ArrowLeft className="w-4 h-4" /> Mine forespørsler</button>
       </div>
     </div>
   );
@@ -277,13 +278,13 @@ function FixDetailContent() {
       <div className="max-w-3xl mx-auto px-4 py-12">
         <div className="flex items-center justify-between mb-8">
           <button onClick={() => router.push('/dashboard')} className="text-sm text-slate-500 hover:text-slate-800 inline-flex items-center gap-1">
-            ← Mine forespørsler
+            <ArrowLeft className="w-4 h-4" /> Mine forespørsler
           </button>
           <button
             onClick={() => { fetchFix(); fetchMessages(); showToast('Oppdatert!'); }}
             className="text-xs text-slate-400 hover:text-slate-600 flex items-center gap-1 transition-colors"
           >
-            ↻ Oppdater
+            <RefreshCw className="w-4 h-4" /> Oppdater
           </button>
         </div>
 
@@ -304,8 +305,8 @@ function FixDetailContent() {
               </button>
             </div>
             {payError && (
-              <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 mb-4 text-sm text-red-800 font-medium">
-                ⚠️ Feil: {payError}
+              <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 mb-4 text-sm text-red-800 font-medium flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 shrink-0" /> Feil: {payError}
               </div>
             )}
           </>
@@ -323,7 +324,7 @@ function FixDetailContent() {
         {/* Custom tilbud — kunde godkjenner eller avslår */}
         {hasOffer && (
           <div className="rounded-2xl bg-purple-50 border border-purple-200 p-6 mb-6 shadow-sm">
-            <p className="text-xs font-semibold text-purple-700 uppercase tracking-wider mb-3">💬 Custom tilbud fra CodeMedic</p>
+            <p className="text-xs font-semibold text-purple-700 uppercase tracking-wider mb-3">Custom tilbud fra CodeMedic</p>
             {fix.admin_note && (
               <p className="text-sm text-purple-900 mb-4 leading-relaxed">{fix.admin_note}</p>
             )}
@@ -358,7 +359,7 @@ function FixDetailContent() {
         {/* Betalingskvittering */}
         {isPaid && fix.status !== 'awaiting_payment' && (
           <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-5 mb-6 flex items-start gap-4">
-            <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center text-xl shrink-0">✓</div>
+            <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center shrink-0"><Check className="w-5 h-5 text-emerald-600" /></div>
             <div className="flex-1">
               <p className="font-bold text-emerald-800">Betaling bekreftet</p>
               <p className="text-sm text-emerald-700 mt-0.5">
@@ -402,19 +403,19 @@ function FixDetailContent() {
                   onClick={() => setFeedbackRating(star)}
                   onMouseEnter={() => setFeedbackHover(star)}
                   onMouseLeave={() => setFeedbackHover(0)}
-                  className="text-3xl transition-transform hover:scale-110"
+                  className="transition-transform hover:scale-110"
                 >
-                  {star <= (feedbackHover || feedbackRating) ? '⭐' : '☆'}
+                  <Star className={`w-7 h-7 transition-colors ${star <= (feedbackHover || feedbackRating) ? 'fill-amber-400 text-amber-400' : 'text-slate-300'}`} />
                 </button>
               ))}
             </div>
             {feedbackRating > 0 && (
               <p className="text-xs text-slate-500 mb-3">
-                {feedbackRating === 5 ? '🎉 Tusen takk!' :
-                 feedbackRating === 4 ? '😊 Bra, takk!' :
-                 feedbackRating === 3 ? '🤔 Greit, takk!' :
-                 feedbackRating === 2 ? '😕 Vi beklager!' :
-                 '😟 Vi beklager — vi tar det til etterretning!'}
+                {feedbackRating === 5 ? 'Tusen takk!' :
+                 feedbackRating === 4 ? 'Bra, takk!' :
+                 feedbackRating === 3 ? 'Greit, takk!' :
+                 feedbackRating === 2 ? 'Vi beklager!' :
+                 'Vi beklager — vi tar det til etterretning!'}
               </p>
             )}
             <textarea
@@ -437,7 +438,11 @@ function FixDetailContent() {
         {/* Viser allerede avgitt tilbakemelding */}
         {fix.status === 'completed' && fix.rating && !showFeedback && (
           <div className="rounded-2xl bg-slate-50 border border-slate-200 px-5 py-4 mb-6 flex items-center gap-3">
-            <span className="text-xl">{'⭐'.repeat(fix.rating)}</span>
+            <div className="flex gap-0.5">
+              {Array.from({ length: fix.rating }).map((_, si) => (
+                <Star key={si} className="w-4 h-4 fill-amber-400 text-amber-400" />
+              ))}
+            </div>
             <span className="text-sm text-slate-600">Takk for din vurdering!</span>
           </div>
         )}
@@ -475,7 +480,7 @@ function FixDetailContent() {
             {showAccessSection && (
               <div className="rounded-3xl bg-white border border-slate-200 p-6 shadow-sm">
                 <div className="flex items-start gap-3 mb-3">
-                  <div className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center text-lg shrink-0">🔑</div>
+                  <div className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center shrink-0"><Key className="w-4 h-4 text-amber-700" /></div>
                   <div>
                     <h2 className="font-semibold text-slate-900">Tilgangsinformasjon</h2>
                     <p className="text-xs text-slate-500 mt-0.5">

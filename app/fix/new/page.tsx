@@ -4,6 +4,22 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/app/lib/supabaseClient';
 import { categories, packages } from '@/app/lib/fixOptions';
+import {
+  Smartphone, ShoppingCart, Palette, Zap, Plug, Globe, Shield, MessageSquare,
+  Check, Paperclip,
+} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+
+const categoryIcons: Record<string, LucideIcon> = {
+  Smartphone,
+  ShoppingCart,
+  Palette,
+  Zap,
+  Plug,
+  Globe,
+  Shield,
+  MessageSquare,
+};
 
 const criticalities = [
   { value: 'low',    label: 'Lav — kan vente',             color: 'text-slate-600' },
@@ -120,7 +136,7 @@ export default function NewFixPage() {
       <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
         <div className="max-w-lg w-full text-center">
           <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <span className="text-3xl">✓</span>
+            <Check className="w-8 h-8 text-emerald-600" />
           </div>
           <h1 className="text-2xl font-bold text-slate-900 mb-3">Forespørsel mottatt!</h1>
           <p className="text-slate-600 mb-2">
@@ -193,7 +209,7 @@ export default function NewFixPage() {
                         : 'border-slate-200 bg-white text-slate-700 hover:border-slate-400'
                     }`}
                   >
-                    <div className="text-lg mb-1">{cat.icon}</div>
+                    <div className="mb-1">{(() => { const Icon = categoryIcons[cat.icon]; return Icon ? <Icon className="w-5 h-5" /> : null; })()}</div>
                     <div className="text-xs font-semibold leading-tight">{cat.name}</div>
                   </button>
                 ))}
@@ -269,11 +285,11 @@ export default function NewFixPage() {
               </div>
               {packageId === 'custom' ? (
                 <div className="mt-4 rounded-xl bg-purple-50 border border-purple-200 px-4 py-3 text-xs text-purple-800 leading-relaxed">
-                  <strong>💬 Custom-vurdering:</strong> Beskriv problemet ditt nedenfor, så gjennomgår vi det og sender deg et tilbud med forslag til omfang og pris. Du bestemmer om du vil gå videre — ingen forpliktelse.
+                  <strong>Custom-vurdering:</strong> Beskriv problemet ditt nedenfor, så gjennomgår vi det og sender deg et tilbud med forslag til omfang og pris. Du bestemmer om du vil gå videre — ingen forpliktelse.
                 </div>
               ) : (
                 <div className="mt-4 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 text-xs text-amber-800 leading-relaxed">
-                  <strong>💡 Startpriser:</strong> Vi bekrefter alltid endelig pris etter gjennomgang. Er jobben mer enn pakken tilsier, sender vi et custom tilbud — du velger selv.
+                  <strong>Startpriser:</strong> Vi bekrefter alltid endelig pris etter gjennomgang. Er jobben mer enn pakken tilsier, sender vi et custom tilbud — du velger selv.
                 </div>
               )}
             </div>
@@ -325,7 +341,7 @@ export default function NewFixPage() {
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={screenshotUrl} alt="Forhåndsvisning" className="w-16 h-16 object-cover rounded-lg border border-slate-200" />
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-semibold text-emerald-700 truncate">✓ {screenshotFile.name}</p>
+                        <p className="text-xs font-semibold text-emerald-700 truncate flex items-center gap-1"><Check className="w-3 h-3 shrink-0" /> {screenshotFile.name}</p>
                         <p className="text-xs text-slate-400 mt-0.5">Opplastet</p>
                       </div>
                       <button
@@ -342,7 +358,7 @@ export default function NewFixPage() {
                     </div>
                   ) : (
                     <label className="flex flex-col items-center gap-1 cursor-pointer">
-                      <span className="text-2xl">📎</span>
+                      <Paperclip className="w-6 h-6 text-slate-400" />
                       <span className="text-sm font-medium text-slate-700">Last opp bilde</span>
                       <span className="text-xs text-slate-400">PNG, JPG, GIF — maks 5 MB</span>
                       <input
@@ -457,7 +473,7 @@ export default function NewFixPage() {
               <ul className="space-y-1.5">
                 {selectedPackage.features.map(f => (
                   <li key={f} className="flex items-center gap-2 text-xs text-slate-600">
-                    <span className="text-emerald-500 font-bold">✓</span> {f}
+                    <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0" /> {f}
                   </li>
                 ))}
               </ul>
@@ -467,7 +483,7 @@ export default function NewFixPage() {
             <div className="rounded-3xl bg-slate-50 border border-slate-200 p-5">
               <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Valgt kategori</p>
               <div className="flex items-center gap-2">
-                <span className="text-xl">{selectedCategory.icon}</span>
+                {(() => { const Icon = categoryIcons[selectedCategory.icon]; return Icon ? <Icon className="w-5 h-5 text-slate-700" /> : null; })()}
                 <span className="font-medium text-slate-800 text-sm">{selectedCategory.name}</span>
               </div>
             </div>

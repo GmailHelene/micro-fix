@@ -2,6 +2,26 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { createServerSupabase } from './lib/supabaseServer';
 import { categories, packages } from './lib/fixOptions';
+import {
+  Shield, Zap, Lock, Flag, Star, Check,
+  ShieldCheck, Clock, CreditCard, MessageSquare,
+  Smartphone, ShoppingCart, Palette, Plug, Globe,
+  FileText, Search, CheckCircle,
+  Trash2, User,
+  Building2,
+} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+
+const categoryIcons: Record<string, LucideIcon> = {
+  Smartphone,
+  ShoppingCart,
+  Palette,
+  Zap,
+  Plug,
+  Globe,
+  Shield,
+  MessageSquare,
+};
 
 export const metadata = {
   title: 'CodeMedic — Premium WordPress og web-hjelp fra norsk utvikler',
@@ -160,13 +180,13 @@ export default async function HomePage() {
                 {/* Trust-points */}
                 <div className="grid grid-cols-2 gap-3">
                   {[
-                    { icon: '🛡️', label: 'No cure, no pay', sub: 'Full refusjon om vi ikke løser det' },
-                    { icon: '⚡', label: '1–3 dagers levering', sub: 'Rask behandling og svar' },
-                    { icon: '🔒', label: 'Trygg betaling', sub: 'Stripe — reservert, ikke trukket' },
-                    { icon: '🇳🇴', label: 'Norsk support', sub: 'På norsk, av norsk utvikler' },
+                    { Icon: Shield, label: 'No cure, no pay', sub: 'Full refusjon om vi ikke løser det' },
+                    { Icon: Zap, label: '1–3 dagers levering', sub: 'Rask behandling og svar' },
+                    { Icon: Lock, label: 'Trygg betaling', sub: 'Stripe — reservert, ikke trukket' },
+                    { Icon: Flag, label: 'Norsk support', sub: 'På norsk, av norsk utvikler' },
                   ].map(t => (
                     <div key={t.label} className="rounded-2xl bg-slate-50 border border-slate-100 p-4">
-                      <div className="text-2xl mb-2">{t.icon}</div>
+                      <div className="mb-2"><t.Icon className="w-6 h-6 text-slate-700" /></div>
                       <div className="text-xs font-semibold text-slate-800">{t.label}</div>
                       <div className="text-xs text-slate-500 mt-0.5">{t.sub}</div>
                     </div>
@@ -179,13 +199,16 @@ export default async function HomePage() {
           {/* ── SOCIAL PROOF BAR ── */}
           <section className="-mt-10">
             <div className="rounded-2xl bg-white border border-slate-100 shadow-sm px-6 py-4 flex flex-wrap items-center justify-center gap-6 text-sm text-slate-500">
-              <span>⭐⭐⭐⭐⭐ <strong className="text-slate-700">5.0</strong> gjennomsnitt</span>
+              <span className="inline-flex items-center gap-1">
+                {[1,2,3,4,5].map(s => <Star key={s} className="w-4 h-4 fill-amber-400 text-amber-400" />)}
+                <strong className="text-slate-700 ml-1">5.0</strong> gjennomsnitt
+              </span>
               <span className="hidden sm:block text-slate-200">|</span>
-              <span>✅ <strong className="text-slate-700">100 %</strong> fornøyde kunder</span>
+              <span className="inline-flex items-center gap-1.5"><Check className="w-4 h-4 text-emerald-500" /> <strong className="text-slate-700">100 %</strong> fornøyde kunder</span>
               <span className="hidden sm:block text-slate-200">|</span>
-              <span>💳 Betaling kun ved ferdigstillelse</span>
+              <span className="inline-flex items-center gap-1.5"><CreditCard className="w-4 h-4 text-slate-500" /> Betaling kun ved ferdigstillelse</span>
               <span className="hidden sm:block text-slate-200">|</span>
-              <span>🇳🇴 Norsk utvikler — norsk kommunikasjon</span>
+              <span className="inline-flex items-center gap-1.5"><Flag className="w-4 h-4 text-slate-500" /> Norsk utvikler — norsk kommunikasjon</span>
             </div>
           </section>
 
@@ -197,13 +220,18 @@ export default async function HomePage() {
               <p className="mt-2 text-slate-500">Fokuserte kategorier — ingenting generelt, alt spesialisert.</p>
             </div>
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              {categories.filter(c => c.id !== 'other').map(cat => (
-                <div key={cat.id} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-md transition-shadow group">
-                  <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-xl mb-3 group-hover:bg-slate-100 transition-colors">{cat.icon}</div>
-                  <h3 className="text-sm font-semibold text-slate-900">{cat.name}</h3>
-                  <p className="mt-1 text-xs text-slate-500 leading-relaxed">{cat.description}</p>
-                </div>
-              ))}
+              {categories.filter(c => c.id !== 'other').map(cat => {
+                const CatIcon = categoryIcons[cat.icon];
+                return (
+                  <div key={cat.id} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-md transition-shadow group">
+                    <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center mb-3 group-hover:bg-slate-100 transition-colors">
+                      {CatIcon && <CatIcon className="w-5 h-5 text-slate-700" />}
+                    </div>
+                    <h3 className="text-sm font-semibold text-slate-900">{cat.name}</h3>
+                    <p className="mt-1 text-xs text-slate-500 leading-relaxed">{cat.description}</p>
+                  </div>
+                );
+              })}
             </div>
           </section>
 
@@ -217,8 +245,8 @@ export default async function HomePage() {
                   Startpriser — vi bekrefter alltid endelig pris før du betaler. Ingen overraskelser.
                 </p>
               </div>
-              <div className="rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs text-emerald-700 font-medium whitespace-nowrap self-start sm:self-auto">
-                ✓ Betal kun når jobben er godkjent
+              <div className="rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs text-emerald-700 font-medium whitespace-nowrap self-start sm:self-auto inline-flex items-center gap-1.5">
+                <Check className="w-3.5 h-3.5" /> Betal kun når jobben er godkjent
               </div>
             </div>
             <div className="grid gap-5 md:grid-cols-3">
@@ -245,7 +273,7 @@ export default async function HomePage() {
                     <ul className="mt-4 space-y-1.5 mb-5">
                       {pkg.features.map(f => (
                         <li key={f} className="flex items-center gap-2 text-sm text-slate-600">
-                          <span className="text-emerald-500 font-bold shrink-0">✓</span>{f}
+                          <Check className="w-4 h-4 text-emerald-500 shrink-0" />{f}
                         </li>
                       ))}
                     </ul>
@@ -292,14 +320,14 @@ export default async function HomePage() {
             </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {[
-                { step: '01', icon: '📝', title: 'Beskriv problemet', desc: 'Velg kategori og pakke, legg ved URL og eventuelt skjermbilde. Tar under 3 minutter.' },
-                { step: '02', icon: '🔍', title: 'Vi gjennomgår', desc: 'Vi vurderer forespørselen og sender et tilbud med pris innen 2–4 timer.' },
-                { step: '03', icon: '💳', title: 'Godkjenn og betal', desc: 'Du godkjenner tilbudet og betaler trygt via Stripe. Vi starter umiddelbart.' },
-                { step: '04', icon: '✅', title: 'Ferdig levert', desc: 'Du får beskjed når jobben er gjort. Betalingen trekkes kun ved fullføring.' },
+                { step: '01', Icon: FileText, title: 'Beskriv problemet', desc: 'Velg kategori og pakke, legg ved URL og eventuelt skjermbilde. Tar under 3 minutter.' },
+                { step: '02', Icon: Search, title: 'Vi gjennomgår', desc: 'Vi vurderer forespørselen og sender et tilbud med pris innen 2–4 timer.' },
+                { step: '03', Icon: CreditCard, title: 'Godkjenn og betal', desc: 'Du godkjenner tilbudet og betaler trygt via Stripe. Vi starter umiddelbart.' },
+                { step: '04', Icon: CheckCircle, title: 'Ferdig levert', desc: 'Du får beskjed når jobben er gjort. Betalingen trekkes kun ved fullføring.' },
               ].map(s => (
                 <div key={s.step} className="rounded-2xl bg-white border border-slate-200 p-6 shadow-sm">
                   <div className="flex items-center justify-between mb-4">
-                    <span className="text-2xl">{s.icon}</span>
+                    <s.Icon className="w-6 h-6 text-slate-700" />
                     <span className="text-3xl font-black text-slate-100">{s.step}</span>
                   </div>
                   <h3 className="font-semibold text-slate-900 mb-1.5">{s.title}</h3>
@@ -314,8 +342,8 @@ export default async function HomePage() {
             <div className="rounded-2xl bg-white border border-slate-200 shadow-sm overflow-hidden">
               <div className="grid lg:grid-cols-[1fr_2fr] gap-0">
                 <div className="bg-slate-900 p-8 flex flex-col justify-center">
-                  <div className="w-16 h-16 rounded-2xl bg-white/10 flex items-center justify-center text-3xl mb-5">
-                    👩‍💻
+                  <div className="w-16 h-16 rounded-2xl bg-white/10 flex items-center justify-center mb-5">
+                    <User className="w-8 h-8 text-slate-200" />
                   </div>
                   <p className="text-xs uppercase tracking-widest text-slate-400 mb-2">Om meg</p>
                   <h2 className="text-2xl font-bold text-white">Norsk utvikler, 5+ års erfaring</h2>
@@ -350,7 +378,11 @@ export default async function HomePage() {
             <div className="grid gap-5 md:grid-cols-3">
               {testimonials.map((t, i) => (
                 <div key={i} className="rounded-2xl bg-white border border-slate-200 p-6 shadow-sm flex flex-col">
-                  <p className="text-amber-400 text-base mb-3">{'★'.repeat(t.stars)}</p>
+                  <div className="flex gap-0.5 mb-3">
+                    {Array.from({ length: t.stars }).map((_, si) => (
+                      <Star key={si} className="w-4 h-4 fill-amber-400 text-amber-400" />
+                    ))}
+                  </div>
                   <p className="text-slate-600 text-sm leading-relaxed flex-1">"{t.text}"</p>
                   <div className="mt-4 pt-4 border-t border-slate-100">
                     <p className="font-semibold text-slate-900 text-sm">{t.name}</p>
@@ -375,13 +407,15 @@ export default async function HomePage() {
                 </div>
                 <div className="grid sm:grid-cols-2 gap-4">
                   {[
-                    { icon: '🔐', title: 'Kryptert overføring', desc: 'Tilgangsinformasjon sendes kun gjennom vårt sikre system — aldri via e-post eller chat.' },
-                    { icon: '🗑️', title: 'Slettes etter fullføring', desc: 'WP-passord, FTP og admin-tilgang slettes umiddelbart fra systemet når jobben er levert.' },
-                    { icon: '👤', title: 'Begrenset tilgang', desc: 'Kun den som jobber på oppdraget har tilgang til innloggingsinformasjonen din.' },
-                    { icon: '💳', title: 'Stripe-sikkerhet', desc: 'Betaling håndteres eksklusivt av Stripe. Vi lagrer aldri kortinformasjon.' },
+                    { Icon: Lock, title: 'Kryptert overføring', desc: 'Tilgangsinformasjon sendes kun gjennom vårt sikre system — aldri via e-post eller chat.' },
+                    { Icon: Trash2, title: 'Slettes etter fullføring', desc: 'WP-passord, FTP og admin-tilgang slettes umiddelbart fra systemet når jobben er levert.' },
+                    { Icon: User, title: 'Begrenset tilgang', desc: 'Kun den som jobber på oppdraget har tilgang til innloggingsinformasjonen din.' },
+                    { Icon: CreditCard, title: 'Stripe-sikkerhet', desc: 'Betaling håndteres eksklusivt av Stripe. Vi lagrer aldri kortinformasjon.' },
                   ].map(s => (
                     <div key={s.title} className="flex gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center text-lg shrink-0">{s.icon}</div>
+                      <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center shrink-0">
+                        <s.Icon className="w-5 h-5 text-slate-600" />
+                      </div>
                       <div>
                         <p className="text-sm font-semibold text-slate-800">{s.title}</p>
                         <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">{s.desc}</p>
@@ -417,12 +451,12 @@ export default async function HomePage() {
           <section>
             <div className="grid gap-4 sm:grid-cols-3">
               {[
-                { icon: '🛡️', title: 'No cure, no pay', desc: 'Full refusjon om vi ikke kan løse problemet — ingen diskusjon.' },
-                { icon: '⏱️', title: '1–3 dagers levering', desc: 'De fleste oppdrag leveres innen 1–3 dager etter betalt reservasjon.' },
-                { icon: '💬', title: 'Norsk kommunikasjon', desc: 'Alt foregår på norsk. Ingen språkbarrierer, ingen misforståelser.' },
+                { Icon: ShieldCheck, title: 'No cure, no pay', desc: 'Full refusjon om vi ikke kan løse problemet — ingen diskusjon.' },
+                { Icon: Clock, title: '1–3 dagers levering', desc: 'De fleste oppdrag leveres innen 1–3 dager etter betalt reservasjon.' },
+                { Icon: MessageSquare, title: 'Norsk kommunikasjon', desc: 'Alt foregår på norsk. Ingen språkbarrierer, ingen misforståelser.' },
               ].map(g => (
                 <div key={g.title} className="rounded-2xl bg-white border border-slate-200 p-6 shadow-sm text-center">
-                  <div className="text-3xl mb-3">{g.icon}</div>
+                  <div className="flex justify-center mb-3"><g.Icon className="w-8 h-8 text-slate-700" /></div>
                   <h3 className="font-semibold text-slate-900 mb-1">{g.title}</h3>
                   <p className="text-sm text-slate-500">{g.desc}</p>
                 </div>
@@ -447,13 +481,13 @@ export default async function HomePage() {
                   </p>
                   <ul className="space-y-2 mb-7">
                     {[
-                      ['🏗️', 'WordPress og WooCommerce', 'Bransjens mest fleksible plattform'],
-                      ['📱', 'Mobiloptimert fra start', 'Ser bra ut på alle skjermstørrelser'],
-                      ['⚡', 'Rask og SEO-vennlig', 'Riktig teknisk fundament fra dag én'],
-                      ['🎓', 'Opplæring inkludert', 'Du kan enkelt oppdatere siden selv'],
-                    ].map(([icon, title, sub]) => (
+                      { Icon: Building2, title: 'WordPress og WooCommerce', sub: 'Bransjens mest fleksible plattform' },
+                      { Icon: Smartphone, title: 'Mobiloptimert fra start', sub: 'Ser bra ut på alle skjermstørrelser' },
+                      { Icon: Zap, title: 'Rask og SEO-vennlig', sub: 'Riktig teknisk fundament fra dag én' },
+                      { Icon: CheckCircle, title: 'Opplæring inkludert', sub: 'Du kan enkelt oppdatere siden selv' },
+                    ].map(({ Icon, title, sub }) => (
                       <li key={title} className="flex items-start gap-3">
-                        <span className="text-lg shrink-0 mt-0.5">{icon}</span>
+                        <Icon className="w-5 h-5 text-slate-600 shrink-0 mt-0.5" />
                         <div>
                           <span className="text-sm font-semibold text-slate-800">{title}</span>
                           <span className="text-sm text-slate-500"> — {sub}</span>

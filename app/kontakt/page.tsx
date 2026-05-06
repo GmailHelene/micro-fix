@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { Wrench, ShoppingCart, Zap, Palette, Plug, MessageSquare, ShieldCheck, Flag, CreditCard, Mail, ArrowRight } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Kontakt CodeMedic — WordPress-hjelp og support',
@@ -46,15 +47,15 @@ export default function KontaktPage() {
               <h2 className="text-lg font-bold text-slate-900 mb-4">Vi hjelper med …</h2>
               <ul className="space-y-3">
                 {[
-                  { icon: '🔧', label: 'WordPress-feil og krasj', desc: 'Hvit skjerm, databasefeil, 404-feil, innloggingsproblemer og alt annet som gjør siden utilgjengelig.' },
-                  { icon: '🛒', label: 'WooCommerce-problemer', desc: 'Checkout som ikke virker, betalingsgateway-feil, ordrebehandling og plugin-konflikter i nettbutikken.' },
-                  { icon: '⚡', label: 'Hastighetsoptimalisering', desc: 'Dårlig PageSpeed-score, treg lasting, bildeoptimalisering, caching og CDN-oppsett.' },
-                  { icon: '🎨', label: 'CSS og design-feil', desc: 'Layout som brekker, responsivitetsproblemer, font- og fargefeil, styling etter tema-oppdatering.' },
-                  { icon: '🔌', label: 'Plugin-konflikter', desc: 'Plugins som krasjer med hverandre, etter oppdatering eller etter PHP-versjonsskifte.' },
-                  { icon: '💬', label: 'Custom forespørsler', desc: 'Noe som ikke passer i standardpakkene? Beskriv det — vi vurderer og sender et custom tilbud.' },
+                  { Icon: Wrench, label: 'WordPress-feil og krasj', desc: 'Hvit skjerm, databasefeil, 404-feil, innloggingsproblemer og alt annet som gjør siden utilgjengelig.' },
+                  { Icon: ShoppingCart, label: 'WooCommerce-problemer', desc: 'Checkout som ikke virker, betalingsgateway-feil, ordrebehandling og plugin-konflikter i nettbutikken.' },
+                  { Icon: Zap, label: 'Hastighetsoptimalisering', desc: 'Dårlig PageSpeed-score, treg lasting, bildeoptimalisering, caching og CDN-oppsett.' },
+                  { Icon: Palette, label: 'CSS og design-feil', desc: 'Layout som brekker, responsivitetsproblemer, font- og fargefeil, styling etter tema-oppdatering.' },
+                  { Icon: Plug, label: 'Plugin-konflikter', desc: 'Plugins som krasjer med hverandre, etter oppdatering eller etter PHP-versjonsskifte.' },
+                  { Icon: MessageSquare, label: 'Custom forespørsler', desc: 'Noe som ikke passer i standardpakkene? Beskriv det — vi vurderer og sender et custom tilbud.' },
                 ].map(item => (
                   <li key={item.label} className="flex items-start gap-3">
-                    <span className="text-xl shrink-0 mt-0.5">{item.icon}</span>
+                    <item.Icon className="w-5 h-5 text-slate-600 shrink-0 mt-0.5" />
                     <div>
                       <span className="text-sm font-semibold text-slate-800">{item.label}</span>
                       <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">{item.desc}</p>
@@ -78,7 +79,7 @@ export default function KontaktPage() {
                     href="mailto:support@codemedic.no"
                     className="inline-flex items-center gap-2 rounded-xl bg-slate-900 text-white px-5 py-3 text-sm font-semibold hover:bg-slate-800 transition-colors"
                   >
-                    ✉️ support@codemedic.no
+                    <Mail className="w-4 h-4" /> support@codemedic.no
                   </a>
                 </div>
 
@@ -102,7 +103,7 @@ export default function KontaktPage() {
                     href="/fix/new"
                     className="inline-flex items-center gap-2 rounded-xl bg-blue-600 text-white px-5 py-3 text-sm font-semibold hover:bg-blue-700 transition-colors"
                   >
-                    Send forespørsel →
+                    Send forespørsel <ArrowRight className="w-4 h-4" />
                   </Link>
                 </div>
               </div>
@@ -112,12 +113,12 @@ export default function KontaktPage() {
             <div className="rounded-2xl bg-white border border-slate-200 shadow-sm p-5">
               <div className="grid grid-cols-3 gap-4 text-center">
                 {[
-                  { icon: '🛡️', label: 'No cure, no pay' },
-                  { icon: '🇳🇴', label: 'Norsk support' },
-                  { icon: '💳', label: 'Trygt via Stripe' },
+                  { Icon: ShieldCheck, label: 'No cure, no pay' },
+                  { Icon: Flag, label: 'Norsk support' },
+                  { Icon: CreditCard, label: 'Trygt via Stripe' },
                 ].map(badge => (
                   <div key={badge.label}>
-                    <div className="text-2xl mb-1">{badge.icon}</div>
+                    <div className="flex justify-center mb-1"><badge.Icon className="w-6 h-6 text-slate-600" /></div>
                     <p className="text-xs text-slate-500 font-medium">{badge.label}</p>
                   </div>
                 ))}

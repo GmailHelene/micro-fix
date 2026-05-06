@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { createServerSupabase, createServiceSupabase } from '../../lib/supabaseServer';
 import { statusLabels, statusColors } from '../../lib/fixOptions';
+import { Rocket, Clock, MessageSquare, Check, CreditCard, AlertTriangle, Key } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -170,18 +171,18 @@ export default async function AdminDashboardPage({
                 'border-slate-200'
               }`}>
                 {isReadyToStart && (
-                  <div className="rounded-xl bg-emerald-50 border border-emerald-200 px-3 py-2 text-xs text-emerald-800 font-semibold mb-3">
-                    🚀 Klar til start — kunden har delt tilgang!
+                  <div className="rounded-xl bg-emerald-50 border border-emerald-200 px-3 py-2 text-xs text-emerald-800 font-semibold mb-3 flex items-center gap-1.5">
+                    <Rocket className="w-3.5 h-3.5" /> Klar til start — kunden har delt tilgang!
                   </div>
                 )}
                 {isWaitingAccess && (
-                  <div className="rounded-xl bg-amber-50 border border-amber-200 px-3 py-2 text-xs text-amber-700 mb-3">
-                    ⏳ Venter på tilgang fra kunde
+                  <div className="rounded-xl bg-amber-50 border border-amber-200 px-3 py-2 text-xs text-amber-700 mb-3 flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5" /> Venter på tilgang fra kunde
                   </div>
                 )}
                 {isOfferPending && (
-                  <div className="rounded-xl bg-purple-50 border border-purple-200 px-3 py-2 text-xs text-purple-800 font-semibold mb-3">
-                    💬 Venter på kundens svar på custom tilbud
+                  <div className="rounded-xl bg-purple-50 border border-purple-200 px-3 py-2 text-xs text-purple-800 font-semibold mb-3 flex items-center gap-1.5">
+                    <MessageSquare className="w-3.5 h-3.5" /> Venter på kundens svar på custom tilbud
                   </div>
                 )}
                 <div className="flex items-start justify-between gap-4 flex-wrap">
@@ -193,16 +194,16 @@ export default async function AdminDashboardPage({
                         {statusLabels[fix.status] ?? fix.status}
                       </span>
                       {fix.payment_status === 'paid' && (
-                        <span className="text-xs bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full font-semibold">✓ Betalt</span>
+                        <span className="text-xs bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full font-semibold inline-flex items-center gap-1"><Check className="w-3 h-3" /> Betalt</span>
                       )}
                       {fix.payment_status === 'authorized' && (
-                        <span className="text-xs bg-blue-50 text-blue-700 px-2.5 py-1 rounded-full font-semibold">💳 Reservert</span>
+                        <span className="text-xs bg-blue-50 text-blue-700 px-2.5 py-1 rounded-full font-semibold inline-flex items-center gap-1"><CreditCard className="w-3 h-3" /> Reservert</span>
                       )}
                       {fix.payment_status === 'capture_failed' && (
-                        <span className="text-xs bg-red-50 text-red-700 px-2.5 py-1 rounded-full font-semibold">⚠️ Capture feilet</span>
+                        <span className="text-xs bg-red-50 text-red-700 px-2.5 py-1 rounded-full font-semibold inline-flex items-center gap-1"><AlertTriangle className="w-3 h-3" /> Capture feilet</span>
                       )}
                       {fix.access_info && (
-                        <span className="text-xs bg-amber-50 text-amber-700 px-2.5 py-1 rounded-full font-semibold">🔑 Tilgang delt</span>
+                        <span className="text-xs bg-amber-50 text-amber-700 px-2.5 py-1 rounded-full font-semibold inline-flex items-center gap-1"><Key className="w-3 h-3" /> Tilgang delt</span>
                       )}
                     </div>
                     <h2 className="text-base font-semibold text-slate-900 truncate">{fix.title}</h2>
