@@ -155,8 +155,8 @@ export default async function HomePage() {
             <div className="rounded-[2.5rem] bg-white p-10 md:p-14 shadow-[0_32px_80px_rgba(15,23,42,0.07)] border border-slate-100">
               <div className="grid gap-12 lg:grid-cols-[3fr_2fr] lg:items-center">
                 <div>
-                  <div className="flex items-center gap-3 mb-6">
-                    <Image src="/logo.png" alt="CodeMedic" width={88} height={88} className="rounded-2xl" />
+                  <div className="flex items-center gap-4 mb-6">
+                    <Image src="/logo.png" alt="CodeMedic" width={128} height={128} className="rounded-2xl" />
                     <p className="text-xs uppercase tracking-[0.35em] text-slate-400 font-medium">CodeMedic</p>
                   </div>
                   <h1 className="text-4xl md:text-5xl font-bold leading-[1.1] text-slate-900 tracking-tight">
