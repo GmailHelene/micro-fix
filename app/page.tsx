@@ -83,20 +83,44 @@ export default async function HomePage() {
       description: 'Premium norsk WordPress og web-hjelp med fast pris og no-cure-no-pay garanti.',
       url: base,
       email: 'support@codemedic.no',
-      provider: { '@type': 'Person', name: 'CodeMedic', url: base },
+      priceRange: '990–2490 kr',
       areaServed: { '@type': 'Country', name: 'Norway' },
+      aggregateRating: {
+        '@type': 'AggregateRating',
+        ratingValue: '5',
+        reviewCount: '3',
+        bestRating: '5',
+        worstRating: '1',
+      },
+      review: testimonials.map(t => ({
+        '@type': 'Review',
+        author: { '@type': 'Person', name: t.name },
+        reviewRating: { '@type': 'Rating', ratingValue: String(t.stars), bestRating: '5' },
+        reviewBody: t.text,
+      })),
       hasOfferCatalog: {
         '@type': 'OfferCatalog',
         name: 'CodeMedic tjenester',
-        itemListElement: packages.map(p => ({
-          '@type': 'Offer',
-          name: p.name,
-          price: p.price,
-          priceCurrency: 'NOK',
-          description: p.description,
-          url: base,
-        })),
+        itemListElement: packages
+          .filter(p => p.price != null)
+          .map(p => ({
+            '@type': 'Offer',
+            name: p.name,
+            price: String(p.price),
+            priceCurrency: 'NOK',
+            description: p.description,
+            url: base,
+          })),
       },
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: faq.map(f => ({
+        '@type': 'Question',
+        name: f.q,
+        acceptedAnswer: { '@type': 'Answer', text: f.a },
+      })),
     },
   ];
 

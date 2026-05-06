@@ -41,7 +41,7 @@ export const metadata: Metadata = {
     locale: 'nb_NO',
   },
   twitter: {
-    card: 'summary',
+    card: 'summary_large_image',
     title: 'CodeMedic — Premium norsk WordPress-hjelp',
     description: 'Profesjonell teknisk hjelp for WordPress og nettbutikk-feil. Betal kun når jobben er godkjent.',
     images: ['/logo.png'],

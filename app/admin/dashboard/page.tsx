@@ -166,7 +166,7 @@ export default async function AdminDashboardPage({
             return (
               <div key={fix.id} className={`rounded-3xl bg-white p-5 shadow-sm hover:shadow-md transition-shadow border ${
                 isReadyToStart ? 'border-emerald-300 ring-2 ring-emerald-100' :
-                isOfferPending ? 'border-purple-200' :
+                isOfferPending ? 'border-purple-300 ring-2 ring-purple-50' :
                 'border-slate-200'
               }`}>
                 {isReadyToStart && (
@@ -177,6 +177,11 @@ export default async function AdminDashboardPage({
                 {isWaitingAccess && (
                   <div className="rounded-xl bg-amber-50 border border-amber-200 px-3 py-2 text-xs text-amber-700 mb-3">
                     ⏳ Venter på tilgang fra kunde
+                  </div>
+                )}
+                {isOfferPending && (
+                  <div className="rounded-xl bg-purple-50 border border-purple-200 px-3 py-2 text-xs text-purple-800 font-semibold mb-3">
+                    💬 Venter på kundens svar på custom tilbud
                   </div>
                 )}
                 <div className="flex items-start justify-between gap-4 flex-wrap">
