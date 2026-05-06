@@ -535,6 +535,8 @@ export default async function HomePage() {
               <div className="flex items-center gap-5">
                 <a href="mailto:support@codemedic.no" className="hover:text-slate-600 transition-colors">support@codemedic.no</a>
                 <Link href="/fix/new" className="hover:text-slate-600 transition-colors">Send forespørsel</Link>
+                <Link href="/blogg" className="hover:text-slate-600 transition-colors">Blogg</Link>
+                <Link href="/kontakt" className="hover:text-slate-600 transition-colors">Kontakt</Link>
                 <Link href="/login" className="hover:text-slate-600 transition-colors">Logg inn</Link>
               </div>
             </div>
