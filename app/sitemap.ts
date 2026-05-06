@@ -2,7 +2,8 @@ import { MetadataRoute } from 'next';
 import { articles } from './lib/articles';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const base = process.env.NEXT_PUBLIC_BASE_URL || 'https://codemedic.no';
+  // Alltid bruk produksjonsdomenet — aldri Vercel-preview-URL
+  const base = 'https://codemedic.no';
   return [
     { url: base,                  lastModified: new Date(), changeFrequency: 'weekly',  priority: 1   },
     { url: `${base}/fix/new`,     lastModified: new Date(), changeFrequency: 'monthly', priority: 0.8 },

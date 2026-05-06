@@ -87,7 +87,7 @@ export default async function HomePage() {
   const supabase = await createServerSupabase();
   const { data: { user } } = await supabase.auth.getUser();
 
-  const base = process.env.NEXT_PUBLIC_BASE_URL || 'https://codemedic.no';
+  const base = 'https://codemedic.no';
 
   const jsonLd = [
     {

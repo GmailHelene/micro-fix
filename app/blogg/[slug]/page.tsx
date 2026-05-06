@@ -130,7 +130,7 @@ export default async function ArticlePage({ params }: Props) {
   const article = getArticleBySlug(slug);
   if (!article) notFound();
 
-  const base = process.env.NEXT_PUBLIC_BASE_URL || 'https://codemedic.no';
+  const base = 'https://codemedic.no';
 
   const jsonLd = {
     '@context': 'https://schema.org',
