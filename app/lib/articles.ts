@@ -646,6 +646,262 @@ export const articles: Article[] = [
       { type: 'cta' },
     ],
   },
+  {
+    slug: '5-woocommerce-feil-norske-nettbutikker',
+    title: '5 WooCommerce-feil som koster norske nettbutikker tusenvis i tapte salg',
+    headline: '5 WooCommerce-feil som koster norske nettbutikker tusenvis i tapte salg — og hvordan du fikser dem',
+    metaTitle: '5 WooCommerce-feil norske nettbutikker | CodeMedic',
+    metaDescription: 'Nets Easy-avrundingsfeil, Vipps på mobil, norske tegn i URL-er, treg checkout og e-post som ikke leveres. De 5 vanligste WooCommerce-feilene med konkrete løsninger.',
+    date: '2026-05-14',
+    readTime: 8,
+    category: 'WooCommerce',
+    intro: 'Nets Easy-avrundingsfeil, Vipps som feiler på mobil, norske tegn som ødelegger URL-er, treg checkout og ordrebekreftelser som aldri kommer frem — de samme feilene koster norske nettbutikker tusenvis i tapte salg hver uke. Her er de fem vanligste, med konkrete løsninger.',
+    sections: [
+      {
+        type: 'p',
+        text: 'Hver uke får jeg meldinger fra norske nettbutikkeiere som har samme historie: noe har sluttet å fungere, kunder klager, salget faller — og forrige utvikler tar 18 000 kr og tre uker for å se på det. De fleste av disse problemene har jeg sett før. Mange av dem kan fikses på under en time hvis du vet hvor du skal lete.',
+      },
+      {
+        type: 'h2',
+        text: 'Feil 1: "Amount does not match sum of orderitems" i Nets Easy / Nexi Checkout',
+      },
+      {
+        type: 'p',
+        text: 'Dette er sannsynligvis den vanligste feilen jeg ser hos butikker som bruker Nets Easy (nå Nexi Checkout). Symptomet er enkelt: kunder kommer til betalingssteget og får en feilmelding. Resultat: salget går tapt. Kunden gir opp, og du får aldri vite at det var et problem.',
+      },
+      {
+        type: 'warning',
+        text: 'Feilmelding kunden ser: "Amount does not match sum of orderitems"',
+      },
+      {
+        type: 'h3',
+        text: 'Hva som faktisk skjer',
+      },
+      {
+        type: 'p',
+        text: 'WooCommerce kan konfigureres til å vise priser med 0 desimaler (f.eks. "299 kr" istedenfor "299,00 kr"). Det ser ryddig ut visuelt, men Nets Easy forventer priser med 2 desimaler internt. Når WooCommerce sender ordresummen med 0 desimaler og linjeproduktene med 2 desimaler (eller omvendt), oppstår det en avrundingsfeil som gjør at totalsummen ikke matcher summen av enkeltvarene.',
+      },
+      {
+        type: 'h3',
+        text: 'Slik fikser du det',
+      },
+      {
+        type: 'p',
+        text: 'Den enkle løsningen: Gå til WooCommerce → Innstillinger → Generelt → Valutaalternativer og sett "Antall desimaler" til 2.',
+      },
+      {
+        type: 'p',
+        text: 'Den programmatiske løsningen hvis du må overstyre temaet — legg dette i functions.php:',
+      },
+      {
+        type: 'code',
+        text: "add_filter( 'wc_get_price_decimals', function() {\n    return 2;\n}, 99 );",
+      },
+      {
+        type: 'p',
+        text: 'Etter endringen må du gå inn på eksisterende produkter og lagre dem på nytt for at prisene skal regenereres med riktig presisjon. Hvis du har mange produkter kan du kjøre denne SQL-spørringen (ta backup først):',
+      },
+      {
+        type: 'code',
+        text: "UPDATE wp_postmeta \nSET meta_value = CAST(meta_value AS DECIMAL(10,2))\nWHERE meta_key IN ('_price', '_regular_price', '_sale_price')\nAND meta_value != '';",
+      },
+      {
+        type: 'h2',
+        text: 'Feil 2: Vipps fungerer på desktop, men ikke på mobil',
+      },
+      {
+        type: 'p',
+        text: 'Dette er en frustrerende feil fordi alt ser ut til å fungere når du tester selv — men når en kunde prøver fra mobilen sin, skjer det ingenting når de trykker "Betal med Vipps", eller de blir sendt tilbake til en feilside.',
+      },
+      {
+        type: 'h3',
+        text: 'De tre vanligste årsakene',
+      },
+      {
+        type: 'h3',
+        text: '1. Mixed content (HTTP/HTTPS-konflikt)',
+      },
+      {
+        type: 'p',
+        text: 'Vipps krever HTTPS over hele kjøpsreisen. Hvis ett eneste element på checkout-siden lastes via http:// (et bilde, et script eller en CSS-fil), blokkerer mobilnettlesere Vipps-popupen som en sikkerhetsrisiko. Desktop-nettlesere er ofte mer tolerante og viser advarsel istedenfor å blokkere. Sjekk dette ved å åpne nettleserkonsollen (F12) på checkout-siden og se etter "Mixed Content"-advarsler.',
+      },
+      {
+        type: 'h3',
+        text: '2. Webhook URL ikke konfigurert riktig',
+      },
+      {
+        type: 'p',
+        text: 'Vipps sender en bekreftelse til serveren din når en betaling fullføres. Hvis webhook-URL-en peker til feil sted, eller hvis serveren din blokkerer eksterne kall, blir ordren stående som "venter" selv om kunden har betalt. Sjekk: WooCommerce → Innstillinger → Betalinger → Vipps → Webhook URL. Den skal være https://dittdomene.no/wc-api/vipps/.',
+      },
+      {
+        type: 'h3',
+        text: '3. Test- og produksjonsnøkler er blandet',
+      },
+      {
+        type: 'p',
+        text: 'Hvis Vipps er satt opp i testmodus men butikken er live (eller omvendt), feiler betalinger uten tydelig feilmelding. Sjekk om "Test mode" er aktivert under Vipps-innstillingene og at API-nøklene matcher modusen.',
+      },
+      {
+        type: 'h3',
+        text: 'Diagnostisk sjekkliste',
+      },
+      {
+        type: 'ol',
+        items: [
+          'Åpne checkout-siden på mobil og sjekk om hele URL-en er https:// (ikke bare deler av den)',
+          'Test betaling med et reelt 1 kr-produkt og se i Vipps-loggene',
+          'Sjekk WooCommerce → Status → Logger for Vipps-relaterte feil',
+          'Verifiser at webhook URL er nådd av Vipps (kan ofte ses i Vipps\' merchant portal)',
+        ],
+      },
+      {
+        type: 'h2',
+        text: 'Feil 3: Norske tegn (æ, ø, å) ødelegger URL-strukturen og SEO',
+      },
+      {
+        type: 'p',
+        text: 'Dette er en stille feil — alt ser ut til å fungere, men du taper Google-rangering hver dag uten å vite det.',
+      },
+      {
+        type: 'h3',
+        text: 'Hva som skjer',
+      },
+      {
+        type: 'p',
+        text: 'Når du oppretter et produkt med norske tegn lager WordPress en URL-slug ved å konvertere æ→e, ø→o og å→a. Men norsk språkkonvensjon transkriberer disse annerledes: å skal bli aa, ø skal bli oe og æ skal bli ae. Dette betyr at folk som søker med korrekt norsk transkripsjon ikke finner butikken din. Verre: importerte produkter kan få URL-encodede slugs som %C3%A5rbok — praktisk talt usynlige i Google.',
+      },
+      {
+        type: 'h3',
+        text: 'Løsning 1: Manuell overstyring (best for nye butikker)',
+      },
+      {
+        type: 'p',
+        text: 'For hvert produkt: gå inn på produktsiden og rediger URL-slug-en manuelt under tittelen. Sett en SEO-vennlig versjon som matcher hvordan folk faktisk søker.',
+      },
+      {
+        type: 'h3',
+        text: 'Løsning 2: Egen filter i functions.php (best for tekniske eiere)',
+      },
+      {
+        type: 'code',
+        text: "add_filter( 'sanitize_title', function( \$title, \$raw_title, \$context ) {\n    if ( 'save' === \$context ) {\n        \$replacements = array(\n            'æ' => 'ae', 'Æ' => 'ae',\n            'ø' => 'oe', 'Ø' => 'oe',\n            'å' => 'aa', 'Å' => 'aa',\n        );\n        \$title = strtr( \$raw_title, \$replacements );\n        \$title = sanitize_title_with_dashes( \$title, '', \$context );\n    }\n    return \$title;\n}, 5, 3 );",
+      },
+      {
+        type: 'warning',
+        text: 'Dette endrer kun nye slugs. Eksisterende produkt-URL-er må regenereres manuelt — og du må sette opp 301-redirects fra de gamle URL-ene for å ikke miste eksisterende Google-rangeringer.',
+      },
+      {
+        type: 'h3',
+        text: 'Løsning 3: Plugin (best for ikke-tekniske eiere)',
+      },
+      {
+        type: 'p',
+        text: 'Permalink Manager Pro håndterer dette automatisk og lar deg masseredigere URL-er med 301-redirects bygd inn. Koster ca. 800 kr/år, men sparer mye tid hvis du har mange produkter.',
+      },
+      {
+        type: 'h2',
+        text: 'Feil 4: Treg checkout som dreper konverteringen',
+      },
+      {
+        type: 'p',
+        text: 'Norske nettkunder forventer at en side laster på under 2 sekunder. Hvis checkout-siden din tar 4 sekunder å laste, mister du opptil 40 % av kundene før de kommer til betalingssteget.',
+      },
+      {
+        type: 'h3',
+        text: 'Hovedårsakene jeg ser oftest',
+      },
+      {
+        type: 'ul',
+        items: [
+          'For mange aktive plugins — 60+ plugins betyr hundrevis av unødvendige databasespørringer på hver sidevisning.',
+          'Heavy assets fra page builders — Elementor, Divi og Visual Composer laster 200–500 kB CSS/JS per side, selv på sider som ikke bruker dem.',
+          'Manglende caching for statiske ressurser — bilder, CSS og JS bør caches aggressivt selv om checkout-siden selv ikke kan caches.',
+          'Billig hosting — WooCommerce trenger PHP 8.1+, MySQL 8.0+ og minst 1 GB dedikert RAM for stabil drift.',
+        ],
+      },
+      {
+        type: 'h3',
+        text: 'Quick wins — sjekkliste',
+      },
+      {
+        type: 'ol',
+        items: [
+          'Installer Query Monitor (gratis plugin) og se hvor mange databasespørringer checkout-siden gjør. Mer enn 100 = du har et problem.',
+          'Deaktiver page builderen på checkout-siden spesifikt — de fleste har en innstilling for dette.',
+          'Skru på "Defer parsing of JavaScript" i caching-pluginen din.',
+          'Optimaliser bildene: WebP-format, ikke større enn 1200 px bred.',
+          'Vurder oppgradering til VPS-hosting hos en norsk leverandør (Domeneshop, Domain.no, eller PRO ISP).',
+        ],
+      },
+      {
+        type: 'h2',
+        text: 'Feil 5: Ordrebekreftelser og fakturaer kommer aldri frem til kundene',
+      },
+      {
+        type: 'p',
+        text: 'Dette er kanskje den mest skadelige feilen, fordi den er helt usynlig. Kunden betaler, du ser ordren i WooCommerce, men kunden får aldri bekreftelse på e-post. De ringer kundeservice — eller refunderer betalingen via banken fordi de tror noe har gått galt.',
+      },
+      {
+        type: 'h3',
+        text: 'Hvorfor WordPress\' standard e-post er upålitelig',
+      },
+      {
+        type: 'p',
+        text: 'WordPress sender e-post via PHPs mail()-funksjon, som bruker serveren din direkte. Problemet: Gmail, Outlook og Hotmail sjekker om e-posten kommer fra en autorisert avsender via SPF-, DKIM- og DMARC-records. Hvis din hostingleverandørs server sender på vegne av dittdomene.no uten å være autorisert, havner e-posten i søppelpost — eller blir avvist helt.',
+      },
+      {
+        type: 'h3',
+        text: 'Slik fikser du det',
+      },
+      {
+        type: 'p',
+        text: 'Steg 1: Installer pluginen WP Mail SMTP (gratis) og koble til en transactional e-postleverandør. For norske nettbutikker anbefaler jeg:',
+      },
+      {
+        type: 'ul',
+        items: [
+          'Mailgun — 5 000 e-poster gratis per måned, best leveringsrate i Norden',
+          'Brevo — 300 e-poster per dag gratis',
+          'SendGrid — 100 e-poster per dag gratis',
+          'Amazon SES — svært billig for høyt volum',
+        ],
+      },
+      {
+        type: 'p',
+        text: 'Steg 2: Legg til en SPF TXT-record i DNS-administrasjonen din (Domeneshop, Loopia, GoDaddy):',
+      },
+      {
+        type: 'code',
+        text: 'v=spf1 include:mailgun.org ~all',
+      },
+      {
+        type: 'p',
+        text: 'Steg 3: Sett opp DKIM — leverandøren gir deg en TXT-record som du legger inn i DNS. Dette beviser kryptografisk at e-posten faktisk kommer fra deg.',
+      },
+      {
+        type: 'tip',
+        text: 'Test leveringsraten din på mail-tester.com — send en test-e-post fra WooCommerce og få en score fra 0–10. Alt under 8 trenger forbedring.',
+      },
+      {
+        type: 'h2',
+        text: 'Når du bør be om profesjonell hjelp',
+      },
+      {
+        type: 'p',
+        text: 'Mange av disse feilene kan du fikse selv hvis du har tid og tålmodighet. Men det er noen situasjoner der det lønner seg å sette ut jobben:',
+      },
+      {
+        type: 'ul',
+        items: [
+          'Du taper salg akkurat nå — hver dag med ødelagt checkout koster mer enn å få det fikset profesjonelt.',
+          'Du er usikker på hva som er årsaken — å gjette seg fram i WooCommerce kan gjøre vondt verre, særlig med databaseendringer.',
+          'Du har gjort backup, men ikke testet den — profesjonelle utviklere har testede rollback-prosesser.',
+          'Feilen ligger i kode du ikke kjenner — custom plugins, tema-overstyringer og legacy-kode kan ha skjulte avhengigheter.',
+        ],
+      },
+      { type: 'cta' },
+    ],
+  },
 ];
 
 export function getArticleBySlug(slug: string): Article | undefined {
